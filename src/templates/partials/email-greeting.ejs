@@ -1,0 +1,11 @@
+<%
+  var greetName =
+    (typeof inviteeName !== 'undefined' && inviteeName && String(inviteeName).trim())
+      ? String(inviteeName).trim()
+      : (typeof username !== 'undefined' && username && String(username).trim())
+        ? String(username).trim()
+        : (typeof user !== 'undefined' && user && user.username && String(user.username).trim())
+          ? String(user.username).trim()
+          : 'bạn';
+%>
+<p class="email-text">Xin chào <strong><%= greetName %></strong>,</p>

@@ -1,0 +1,60 @@
+model Job {
+  id               Int                 @id @default(autoincrement())
+  title            String
+  description      String              @db.Text
+  minSalary        Int?
+  maxSalary        Int?
+  quantity         Int                 @default(1)
+  jobType          JobType
+  experienceLevel  ExperienceLevel
+  moderationStatus JobModerationStatus @default(APPROVED)
+  deadline         DateTime?           @db.Timestamp(0)
+  isFeatured       Boolean             @default(false)
+  workLocation     String?
+  createdAt        DateTime            @default(now()) @db.Timestamp(0)
+  updatedAt        DateTime            @updatedAt @db.Timestamp(0)
+  deletedAt        DateTime?           @db.Timestamp(0)
+  employerId       Int?
+  companyId        Int
+  categoryId       Int
+ 
+  viewCount        Int                 @default(0)
+  applications     Application[]
+  jobSkills        JobSkill[]
+  category         Category            @relation(fields: [categoryId], references: [id])
+  company          Company             @relation(fields: [companyId], references: [id])
+  employer         Employer?           @relation(fields: [employerId], references: [id])
+  savedBy          SavedJob[]
+
+  @@index([companyId])
+  @@index([employerId])
+  @@index([categoryId])
+  @@index([categoryId, createdAt], map: "jobs_category_createdAt_idx")
+  @@index([jobType, experienceLevel])
+  @@index([createdAt])
+  @@index([deletedAt])
+  @@index([moderationStatus, deadline], map: "jobs_moderation_deadline_idx")
+  @@index([isFeatured])
+  @@map("jobs")
+}
+
+enum JobModerationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum ExperienceLevel {
+  INTERN
+  FRESHER
+  JUNIOR
+  MIDDLE
+  SENIOR
+  LEAD
+}
+
+enum JobType {
+  FULL_TIME
+  PART_TIME
+  FREELANCE
+}

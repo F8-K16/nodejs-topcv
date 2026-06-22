@@ -1,0 +1,13 @@
+model UserRole {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  roleId    Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  role      Role     @relation(fields: [roleId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([userId, roleId])
+  @@index([roleId], map: "users_roles_roleId_fkey")
+  @@map("users_roles")
+}

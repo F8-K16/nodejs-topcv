@@ -1,0 +1,21 @@
+<%- include('partials/email-top', { pageTitle: 'Lời mời tham gia nhà tuyển dụng' }) %>
+        <h1 class="email-title">Bạn được mời tham gia đội tuyển dụng</h1>
+        <%- include('partials/email-greeting') %>
+        <p class="email-text">
+          <strong><%= inviterName %></strong> từ công ty
+          <strong><%= companyName %></strong> đã mời bạn tạo tài khoản nhà tuyển
+          dụng trên <strong><%= appName %></strong> cùng hồ sơ công ty hiện có.
+          Bạn không cần nhập lại thông tin công ty — chỉ cần đăng ký bằng
+          <strong>đúng email nhận thư này</strong>.
+        </p>
+        <p class="email-muted">
+          Mã lời mời có hiệu lực trong một giờ kể từ khi được tạo.
+        </p>
+        <a href="<%= inviteUrl %>" class="email-btn">Đăng ký với lời mời</a>
+        <p class="email-muted" style="margin-top: 22px">
+          Nếu bạn đăng ký thủ công trên trang đăng ký, dán mã sau vào ô dành cho
+          tài khoản được mời:
+        </p>
+        <div class="code-box"><%= inviteCode %></div>
+        <p class="email-text" style="margin-top: 24px">Trân trọng,<br /><%= appName %></p>
+<%- include('partials/email-bottom') %>

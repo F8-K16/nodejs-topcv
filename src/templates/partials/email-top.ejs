@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= typeof pageTitle !== 'undefined' ? pageTitle : appName %></title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        background: #eef2f7;
+        font-family: "Segoe UI", Arial, sans-serif;
+        color: #1f2937;
+        -webkit-text-size-adjust: 100%;
+        -ms-text-size-adjust: 100%;
+      }
+      table {
+        border-collapse: collapse;
+      }
+      img {
+        border: 0;
+        outline: none;
+        text-decoration: none;
+        max-width: 100%;
+        height: auto;
+        display: block;
+      }
+      .email-outer {
+        max-width: 640px;
+        margin: 0 auto;
+        padding: 24px 16px 40px;
+      }
+      .email-banner {
+        border-radius: 16px 16px 0 0;
+        overflow: hidden;
+        background: linear-gradient(
+          120deg,
+          #0d9488 0%,
+          #0f766e 45%,
+          #115e59 100%
+        );
+        padding: 20px 24px;
+        text-align: center;
+      }
+      .email-logo {
+        display: inline-block;
+        color: #ffffff;
+        text-decoration: none;
+      }
+      .email-logo-wordmark {
+        display: inline-block;
+        font-size: 26px;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        color: #ffffff;
+        line-height: 1.2;
+      }
+      .email-tagline {
+        margin: 8px 0 0;
+        font-size: 13px;
+        color: rgba(255, 255, 255, 0.88);
+      }
+      .email-card {
+        background: #ffffff;
+        border-radius: 0 0 16px 16px;
+        padding: 28px 24px 32px;
+        border: 1px solid #e5e7eb;
+        border-top: none;
+        box-shadow: 0 12px 32px rgba(15, 23, 42, 0.06);
+      }
+      .email-title {
+        margin: 0 0 16px;
+        font-size: 22px;
+        font-weight: 700;
+        color: #0f172a;
+        line-height: 1.35;
+      }
+      .email-text {
+        font-size: 15px;
+        line-height: 1.65;
+        color: #4b5563;
+        margin: 0 0 14px;
+      }
+      .email-muted {
+        font-size: 13px;
+        color: #6b7280;
+        margin: 0 0 12px;
+      }
+      .email-btn {
+        display: inline-block;
+        margin-top: 8px;
+        padding: 12px 22px;
+        background: #0d9488;
+        color: #ffffff !important;
+        text-decoration: none;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 600;
+      }
+      .email-btn-secondary {
+        background: #1e293b;
+      }
+      .email-footer {
+        margin-top: 28px;
+        padding-top: 20px;
+        border-top: 1px solid #e5e7eb;
+        font-size: 12px;
+        color: #9ca3af;
+        text-align: center;
+        line-height: 1.6;
+      }
+      .email-footer a {
+        color: #0d9488;
+      }
+      .job-list {
+        margin: 16px 0 0;
+        padding: 0;
+        list-style: none;
+      }
+      .job-item {
+        margin-bottom: 14px;
+        padding: 14px 16px;
+        border-radius: 12px;
+        border: 1px solid #f3f4f6;
+        background: #fafafa;
+      }
+      .job-item:last-child {
+        margin-bottom: 0;
+      }
+      .job-title-row {
+        margin: 0 0 6px;
+      }
+      .job-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: #0f766e;
+        text-decoration: none;
+        display: inline-block;
+        margin-right: 6px;
+      }
+      .job-badge {
+        display: inline-block;
+        vertical-align: middle;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        padding: 3px 8px;
+        border-radius: 6px;
+        background: #fef3c7;
+        color: #b45309;
+      }
+      .job-badge-featured {
+        background: #dbeafe;
+        color: #1d4ed8;
+      }
+      .job-meta {
+        margin-top: 6px;
+        font-size: 13px;
+        color: #6b7280;
+        line-height: 1.5;
+      }
+      .job-salary {
+        margin-top: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        color: #15803d;
+      }
+      .code-box {
+        margin-top: 16px;
+        padding: 14px 16px;
+        border-radius: 10px;
+        background: #f1f5f9;
+        border: 1px dashed #94a3b8;
+        font-family: ui-monospace, monospace;
+        font-size: 13px;
+        word-break: break-all;
+        color: #0f172a;
+      }
+      ul.bullets {
+        margin: 12px 0 0;
+        padding-left: 20px;
+        color: #4b5563;
+        line-height: 1.7;
+      }
+      .otp-box {
+        margin: 20px 0;
+        padding: 18px;
+        border-radius: 12px;
+        text-align: center;
+        font-size: 28px;
+        font-weight: 700;
+        letter-spacing: 6px;
+      }
+      .otp-verify {
+        background: #f0fdf4;
+        border: 1px solid #86efac;
+        color: #15803d;
+      }
+      .otp-reset {
+        background: #fef2f2;
+        border: 1px solid #fca5a5;
+        color: #b91c1c;
+      }
+      .reason-box {
+        margin: 16px 0;
+        padding: 16px;
+        border-radius: 12px;
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        color: #991b1b;
+        font-size: 14px;
+        line-height: 1.6;
+      }
+      .stat-highlight {
+        font-size: 28px;
+        font-weight: 800;
+        color: #0f766e;
+        margin: 8px 0 20px;
+      }
+      .job-type-pill {
+        display: inline-block;
+        margin-top: 6px;
+        font-size: 11px;
+        font-weight: 600;
+        padding: 3px 8px;
+        border-radius: 6px;
+        background: #f1f5f9;
+        color: #475569;
+      }
+      @media only screen and (max-width: 480px) {
+        .email-outer {
+          padding: 12px 8px 24px;
+        }
+        .email-banner {
+          padding: 16px;
+          border-radius: 12px 12px 0 0;
+        }
+        .email-card {
+          padding: 20px 16px 24px;
+          border-radius: 0 0 12px 12px;
+        }
+        .email-title {
+          font-size: 20px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="email-outer">
+      <div class="email-banner">
+        <a href="<%= siteUrl %>" class="email-logo">
+          <span class="email-logo-wordmark"><%= appName %></span>
+        </a>
+        <p class="email-tagline">Việc làm &amp; tuyển dụng</p>
+      </div>
+      <div class="email-card">

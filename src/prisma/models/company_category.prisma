@@ -1,0 +1,10 @@
+model CompanyCategory {
+  companyId  Int
+  parentCategoryId Int
+  parentCategory   CategoryParent @relation(fields: [parentCategoryId], references: [id])
+  company          Company         @relation(fields: [companyId], references: [id])
+
+  @@id([companyId, parentCategoryId])
+  @@index([parentCategoryId], map: "company_categories_parentCategoryId_fkey")
+  @@map("company_categories")
+}

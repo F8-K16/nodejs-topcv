@@ -1,0 +1,12 @@
+<%- include('partials/email-top', { pageTitle: 'Đơn ứng tuyển mới' }) %>
+        <h1 class="email-title">Tổng hợp ứng tuyển mới</h1>
+        <%- include('partials/email-greeting') %>
+        <p class="email-text">
+          Trong 24 giờ qua, các tin tuyển dụng của
+          <strong><%= companyName %></strong> trên
+          <strong><%= appName %></strong> đã nhận thêm:
+        </p>
+        <p class="stat-highlight"><%= newApplicationsCount %> đơn mới</p>
+        <a href="<%= applicationsUrl %>" class="email-btn">Xem danh sách ứng tuyển</a>
+        <p class="email-text" style="margin-top: 24px; margin-bottom: 0">Trân trọng!</p>
+<%- include('partials/email-bottom') %>

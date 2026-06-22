@@ -1,0 +1,13 @@
+model CompanyFollow {
+  id          Int       @id @default(autoincrement())
+  candidateId Int
+  companyId   Int
+  createdAt   DateTime  @default(now()) @db.Timestamp(0)
+  candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  company     Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([candidateId, companyId], map: "company_follows_candidate_company_key")
+  @@index([companyId])
+  @@index([candidateId])
+  @@map("company_follows")
+}

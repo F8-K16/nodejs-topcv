@@ -1,0 +1,19 @@
+<%- include('partials/email-top', { pageTitle: 'Tài khoản đã được phê duyệt' }) %>
+        <h1 class="email-title">Tài khoản đã được phê duyệt</h1>
+        <%- include('partials/email-greeting') %>
+        <p class="email-text">
+          Tài khoản nhà tuyển dụng trên <strong><%= appName %></strong> đã được
+          phê duyệt thành công. Bạn có thể đăng nhập và bắt đầu sử dụng các tính
+          năng sau:
+        </p>
+        <ul class="bullets">
+          <li>Đăng tin tuyển dụng</li>
+          <li>Tìm kiếm ứng viên phù hợp</li>
+          <li>Quản lý quy trình tuyển dụng</li>
+        </ul>
+        <a href="<%= employerPortalUrl %>" class="email-btn">Vào trang nhà tuyển dụng</a>
+        <p class="email-text" style="margin-top: 20px">
+          Nếu cần hỗ trợ, vui lòng liên hệ đội ngũ <%= appName %>.
+        </p>
+        <p class="email-text" style="margin-bottom: 0">Trân trọng!</p>
+<%- include('partials/email-bottom') %>

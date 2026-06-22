@@ -1,0 +1,19 @@
+<%- include('partials/email-top', { pageTitle: 'Tài khoản chưa được phê duyệt' }) %>
+        <h1 class="email-title">Tài khoản chưa được phê duyệt</h1>
+        <%- include('partials/email-greeting') %>
+        <p class="email-text">
+          Hồ sơ nhà tuyển dụng trên <strong><%= appName %></strong> hiện chưa
+          đáp ứng điều kiện phê duyệt.
+        </p>
+        <% if(reason) { %>
+        <div class="reason-box"><strong>Lý do:</strong> <%= reason %></div>
+        <% } %>
+        <p class="email-text">
+          Bạn có thể cập nhật lại thông tin và gửi xét duyệt lại, hoặc liên hệ
+          đội ngũ hỗ trợ để được hướng dẫn thêm.
+        </p>
+        <a href="<%= signupUrl %>" class="email-btn email-btn-secondary"
+          >Đăng ký lại tài khoản</a
+        >
+        <p class="email-text" style="margin-bottom: 0">Trân trọng!</p>
+<%- include('partials/email-bottom') %>

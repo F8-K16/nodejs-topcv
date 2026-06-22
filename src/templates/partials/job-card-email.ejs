@@ -1,0 +1,18 @@
+<li class="job-item">
+  <div class="job-title-row">
+    <a href="<%= job.jobUrl %>" class="job-title"><%= job.title %></a>
+    <% if (job.isFeatured) { %>
+    <span class="job-badge job-badge-featured">Nổi bật</span>
+    <% } %>
+  </div>
+  <div class="job-meta"><%= job.companyName %><% if (job.categoryName) { %> · <%= job.categoryName %><% } %></div>
+  <% if (job.jobTypeLabel) { %>
+  <div><span class="job-type-pill"><%= job.jobTypeLabel %></span></div>
+  <% } %>
+  <% if (job.salaryLabel) { %>
+  <div class="job-salary"><%= job.salaryLabel %></div>
+  <% } %>
+  <% if (job.locationLabel) { %>
+  <div class="job-meta"><%= job.locationLabel %></div>
+  <% } %>
+</li>

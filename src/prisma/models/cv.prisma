@@ -1,0 +1,23 @@
+enum CvStatus {
+  DRAFT
+  COMPLETED
+}
+
+model Cv {
+  id           Int        @id @default(autoincrement())
+  userId       Int
+  templateId   Int
+  title        String     @db.VarChar(160)
+  status       CvStatus   @default(DRAFT)
+  content      Json
+  createdAt    DateTime   @default(now()) @db.Timestamp(0)
+  updatedAt    DateTime   @updatedAt @db.Timestamp(0)
+  lastEditedAt DateTime   @default(now()) @db.Timestamp(0)
+
+  user     User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  template CvTemplate @relation(fields: [templateId], references: [id])
+
+  @@index([userId, updatedAt], map: "cvs_user_updated_idx")
+  @@index([templateId], map: "cvs_templateId_fkey")
+  @@map("cvs")
+}

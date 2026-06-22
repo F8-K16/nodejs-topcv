@@ -1,0 +1,11 @@
+model Permission {
+  id              Int              @id @default(autoincrement())
+  name            String           @unique
+  moduleActionId  Int
+  moduleAction    ModuleAction     @relation(fields: [moduleActionId], references: [id])
+  rolePermissions RolePermission[]
+  userPermissions UserPermission[]
+
+  @@index([moduleActionId], map: "permissions_moduleActionId_fkey")
+  @@map("permissions")
+}

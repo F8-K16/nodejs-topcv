@@ -1,0 +1,14 @@
+<%- include('partials/email-top', { pageTitle: 'Gợi ý việc làm' }) %>
+        <h1 class="email-title">Gợi ý việc làm phù hợp</h1>
+        <%- include('partials/email-greeting') %>
+        <p class="email-text">
+          <%= appName %> gợi ý các vị trí phù hợp với hồ sơ của bạn.
+        </p>
+        <ul class="job-list">
+          <% jobs.forEach(function (j) { %>
+          <%- include('partials/job-card-email', { job: j }) %>
+          <% }); %>
+        </ul>
+        <a href="<%= moreUrl %>" class="email-btn">Xem thêm việc làm</a>
+        <p class="email-text" style="margin-top: 24px; margin-bottom: 0">Trân trọng!</p>
+<%- include('partials/email-bottom') %>

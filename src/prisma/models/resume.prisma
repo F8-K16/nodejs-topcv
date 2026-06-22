@@ -1,0 +1,15 @@
+model Resume {
+  id           Int           @id @default(autoincrement())
+  title        String
+  fileUrl      String
+  createdAt    DateTime      @default(now()) @db.Timestamp(0)
+  updatedAt    DateTime      @updatedAt @db.Timestamp(0)
+  deletedAt    DateTime?     @db.Timestamp(0)
+  candidateId  Int
+  applications Application[]
+  candidate    Candidate     @relation(fields: [candidateId], references: [id])
+
+  @@index([candidateId], map: "resumes_candidateId_fkey")
+  @@index([deletedAt])
+  @@map("resumes")
+}

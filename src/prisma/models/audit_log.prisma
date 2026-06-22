@@ -1,0 +1,19 @@
+model AuditLog {
+  id          Int      @id @default(autoincrement())
+  actorUserId Int
+  actorUser   User     @relation(fields: [actorUserId], references: [id])
+  action      String   @db.VarChar(200)
+  entityType  String?  @db.VarChar(100)
+  entityId    String?  @db.VarChar(100)
+  success     Boolean  @default(true)
+  requestId   String?  @db.VarChar(64)
+  ip          String?  @db.VarChar(64)
+  userAgent   String?  @db.VarChar(255)
+  metadata    Json?
+  createdAt   DateTime @default(now()) @db.Timestamp(0)
+
+  @@index([actorUserId, createdAt], map: "audit_logs_actorUserId_createdAt_idx")
+  @@index([action, createdAt], map: "audit_logs_action_createdAt_idx")
+  @@map("audit_logs")
+}
+

@@ -1,0 +1,19 @@
+/// Singleton cấu hình site (bản ghi id = 1).
+model SiteSettings {
+  id              Int      @id @default(1)
+  siteName        String   @default("Job Portal") @db.VarChar(200)
+  logoUrl         String?  @db.VarChar(500)
+  bannerUrl       String?  @db.VarChar(500)
+  seoTitle        String?  @db.VarChar(200)
+  seoDescription  String?  @db.Text
+  maintenanceMode Boolean  @default(false)
+  smtpHost        String?  @db.VarChar(200)
+  smtpPort        Int?
+  smtpUser        String?  @db.VarChar(200)
+  smtpPass        String?  @db.VarChar(200)
+  smtpFrom        String?  @db.VarChar(200)
+  createdAt       DateTime @default(now()) @db.Timestamp(0)
+  updatedAt       DateTime @updatedAt @db.Timestamp(0)
+
+  @@map("site_settings")
+}

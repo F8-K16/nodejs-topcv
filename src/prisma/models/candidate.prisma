@@ -1,0 +1,20 @@
+model Candidate {
+  id                  Int                  @id @default(autoincrement())
+  userId              Int                  @unique
+  provinceId          Int?
+  districtId          Int?
+  applications        Application[]
+  candidateCategories CandidateCategory[]
+  preference          CandidatePreference?
+  candidateSkills     CandidateSkill[]
+  district            District?            @relation(fields: [districtId], references: [id])
+  province            Province?            @relation(fields: [provinceId], references: [id])
+  user                User                 @relation(fields: [userId], references: [id])
+  companyFollows      CompanyFollow[]
+  resumes             Resume[]
+  savedJobs           SavedJob[]
+
+  @@index([districtId], map: "candidates_districtId_fkey")
+  @@index([provinceId], map: "candidates_provinceId_fkey")
+  @@map("candidates")
+}

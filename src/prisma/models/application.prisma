@@ -1,0 +1,39 @@
+model Application {
+  id          Int               @id @default(autoincrement())
+  createdAt   DateTime          @default(now())
+  status      ApplicationStatus @default(PENDING)
+  coverLetter String?           @db.Text
+  aiMatchStatus AiMatchStatus   @default(PENDING)
+  aiMatchScore  Int?
+  aiMatchReason String?         @db.Text
+  aiMatchModel  String?         @db.VarChar(64)
+  aiMatchError  String?         @db.VarChar(255)
+  aiMatchUpdatedAt DateTime?    @db.Timestamp(0)
+  candidateId Int
+  jobId       Int
+  resumeId    Int?
+  candidate   Candidate         @relation(fields: [candidateId], references: [id])
+  job         Job               @relation(fields: [jobId], references: [id])
+  resume      Resume?           @relation(fields: [resumeId], references: [id])
+
+  @@unique([candidateId, jobId], map: "applications_candidate_job_unique")
+  @@index([candidateId], map: "applications_candidateId_fkey")
+  @@index([jobId], map: "applications_jobId_fkey")
+  @@index([resumeId], map: "applications_resumeId_fkey")
+  @@index([status, createdAt])
+  @@map("applications")
+}
+
+enum ApplicationStatus {
+  PENDING
+  REVIEWED
+  ACCEPTED
+  REJECTED
+}
+
+enum AiMatchStatus {
+  PENDING
+  RUNNING
+  DONE
+  FAILED
+}

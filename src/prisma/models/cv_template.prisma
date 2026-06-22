@@ -1,0 +1,15 @@
+model CvTemplate {
+  id           Int      @id @default(autoincrement())
+  name         String   @db.VarChar(120)
+  description  String?  @db.VarChar(255)
+  thumbnailUrl String?  @db.VarChar(512)
+  templateData Json
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now()) @db.Timestamp(0)
+  updatedAt    DateTime @updatedAt @db.Timestamp(0)
+  deletedAt    DateTime? @db.Timestamp(0)
+  cvs          Cv[]
+
+  @@index([deletedAt])
+  @@map("cv_templates")
+}

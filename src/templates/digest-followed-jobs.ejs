@@ -1,0 +1,15 @@
+<%- include('partials/email-top', { pageTitle: 'Việc làm từ công ty bạn theo dõi' }) %>
+        <h1 class="email-title">Việc làm mới từ công ty bạn theo dõi</h1>
+        <%- include('partials/email-greeting') %>
+        <p class="email-text">
+          Dưới đây là các tin tuyển dụng có cập nhật trong 24 giờ qua từ nhà
+          tuyển dụng bạn đang theo dõi trên <strong><%= appName %></strong>.
+        </p>
+        <ul class="job-list">
+          <% jobs.forEach(function (j) { %>
+          <%- include('partials/job-card-email', { job: j }) %>
+          <% }); %>
+        </ul>
+        <a href="<%= moreUrl %>" class="email-btn">Công ty đang theo dõi</a>
+        <p class="email-text" style="margin-top: 24px; margin-bottom: 0">Trân trọng!</p>
+<%- include('partials/email-bottom') %>

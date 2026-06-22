@@ -1,0 +1,12 @@
+model ModuleAction {
+  id          Int          @id @default(autoincrement())
+  moduleId    Int
+  actionId    Int
+  action      Action       @relation(fields: [actionId], references: [id])
+  module      Module       @relation(fields: [moduleId], references: [id])
+  permissions Permission[]
+
+  @@unique([moduleId, actionId])
+  @@index([actionId], map: "modules_actions_actionId_fkey")
+  @@map("modules_actions")
+}

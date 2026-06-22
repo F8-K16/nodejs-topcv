@@ -1,0 +1,42 @@
+model CandidatePreference {
+  id                  Int              @id @default(autoincrement())
+  candidateId         Int              @unique
+  desiredMinSalary    Int?
+  desiredMaxSalary    Int?
+  jobType             JobType?
+  experienceLevel     ExperienceLevel?
+  preferredProvinceId Int?
+  preferredDistrictId Int?
+  isOpenToRemote      Boolean          @default(false)
+  createdAt           DateTime         @default(now()) @db.Timestamp(0)
+  updatedAt           DateTime         @updatedAt @db.Timestamp(0)
+  candidate           Candidate        @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  preferredDistrict   District?        @relation("CandidatePrefDistrict", fields: [preferredDistrictId], references: [id])
+  preferredProvince   Province?        @relation("CandidatePrefProvince", fields: [preferredProvinceId], references: [id])
+
+  @@index([preferredProvinceId])
+  @@index([preferredDistrictId])
+  @@map("candidate_preferences")
+}
+
+model CandidateSkill {
+  candidateId Int
+  skillId     Int
+  candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  skill       Skill     @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@id([candidateId, skillId])
+  @@index([skillId])
+  @@map("candidate_skills")
+}
+
+model CandidateCategory {
+  candidateId Int
+  categoryId  Int
+  candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  category    Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([candidateId, categoryId])
+  @@index([categoryId])
+  @@map("candidate_categories")
+}

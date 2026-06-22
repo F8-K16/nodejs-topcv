@@ -1,0 +1,18 @@
+model Employer {
+  id        Int            @id @default(autoincrement())
+  userId    Int            @unique
+  companyId Int?
+  status    EmployerStatus @default(PENDING)
+  company               Company?         @relation(fields: [companyId], references: [id])
+  user                  User             @relation(fields: [userId], references: [id])
+  jobs                  Job[]
+
+  @@index([companyId], map: "employers_companyId_fkey")
+  @@map("employers")
+}
+
+enum EmployerStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}

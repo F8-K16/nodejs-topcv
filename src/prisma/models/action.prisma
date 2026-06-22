@@ -1,0 +1,10 @@
+model Action {
+  id            Int            @id @default(autoincrement())
+  name          String         @unique
+  status        Boolean        @default(true)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  moduleActions ModuleAction[]
+
+  @@map("actions")
+}

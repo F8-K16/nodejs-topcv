@@ -1,0 +1,16 @@
+model District {
+  id                                      Int                   @id @default(autoincrement())
+  name                                    String
+  provinceId                              Int
+  createdAt                               DateTime              @default(now()) @db.Timestamp(0)
+  updatedAt                               DateTime              @updatedAt @db.Timestamp(0)
+  deletedAt                               DateTime?             @db.Timestamp(0)
+  candidatePreferencesAsPreferredDistrict CandidatePreference[] @relation("CandidatePrefDistrict")
+  candidates                              Candidate[]
+  companies                               Company[]
+  province                                Province              @relation(fields: [provinceId], references: [id])
+
+  @@index([provinceId], map: "districts_provinceId_fkey")
+  @@index([deletedAt])
+  @@map("districts")
+}

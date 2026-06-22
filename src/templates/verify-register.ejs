@@ -1,0 +1,15 @@
+<%- include('partials/email-top', { pageTitle: 'Xác thực email' }) %>
+        <h1 class="email-title">Xác thực email đăng ký</h1>
+        <%- include('partials/email-greeting') %>
+        <p class="email-text">
+          Cảm ơn bạn đã đăng ký tài khoản. Vui lòng sử dụng mã OTP bên dưới để
+          kích hoạt tài khoản của bạn.
+        </p>
+        <div class="otp-box otp-verify"><%= code %></div>
+        <p class="email-text">Mã có hiệu lực trong <strong>2 phút</strong>.</p>
+        <a href="<%= verifyEmailUrl %>" class="email-btn">Đi đến trang xác thực</a>
+        <p class="email-muted">
+          Nếu bạn không thực hiện yêu cầu này, vui lòng bỏ qua email.
+        </p>
+        <p class="email-text" style="margin-bottom: 0">Trân trọng!</p>
+<%- include('partials/email-bottom') %>

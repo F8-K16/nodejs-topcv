@@ -1,0 +1,26 @@
+model Company {
+  id          Int               @id @default(autoincrement())
+  name        String            @unique
+  description String?           @db.Text
+  logo        String?
+  website     String?
+  location    String
+  status      Boolean           @default(false)
+  createdAt   DateTime          @default(now()) @db.Timestamp(0)
+  updatedAt   DateTime          @updatedAt @db.Timestamp(0)
+  deletedAt   DateTime?         @db.Timestamp(0)
+  provinceId  Int
+  districtId  Int
+  district    District          @relation(fields: [districtId], references: [id])
+  province    Province          @relation(fields: [provinceId], references: [id])
+  categories  CompanyCategory[]
+  followers   CompanyFollow[]
+  employers      Employer[]
+  jobs           Job[]
+
+  @@index([districtId])
+  @@index([provinceId])
+  @@index([deletedAt])
+  @@index([status, provinceId, districtId], map: "companies_status_location_idx")
+  @@map("companies")
+}
