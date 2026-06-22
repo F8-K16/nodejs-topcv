@@ -4,7 +4,7 @@ import { createHash, randomBytes } from "node:crypto";
 
 import { Prisma } from "../generated/prisma/client";
 import type { PrismaTransactionClient } from "../utils/prisma";
-import { User, UserDto } from "../types/user.type";
+import { UserDto } from "../types/user.type";
 import { HttpException } from "../utils/exception";
 import { hashPassword } from "../utils/hashing";
 import { prisma, prismaTransaction } from "../utils/prisma";
@@ -14,7 +14,6 @@ import {
   invalidateUserAuthDataCache,
 } from "../utils/cache";
 import { enqueueDeleteJobIndex, enqueueUpsertJobIndex } from "../search/jobs.indexer";
-import { JobDTO } from "../types/job.type";
 
 type UserWithPermissions = Prisma.UserGetPayload<{
   select: {
@@ -539,14 +538,14 @@ export const userService = {
         where: { userId: id },
         select: { id: true },
       });
-      const employerIds = employers.map((e: User) => e.id);
+      const employerIds = employers.map((e) => e.id);
 
       if (employerIds.length > 0) {
         const jobs = await tx.job.findMany({
           where: { employerId: { in: employerIds } },
           select: { id: true },
         });
-        const jobIds = jobs.map((j: JobDTO) => j.id);
+        const jobIds = jobs.map((j) => j.id);
         if (jobIds.length > 0) {
           await tx.job.updateMany({
             where: { id: { in: jobIds } },
