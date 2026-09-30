@@ -20,6 +20,7 @@ import { JobModerationStatus, Prisma } from "../generated/prisma/client";
 import { locationService } from "./location.service";
 import { notificationService } from "./notification.service";
 import { enqueueDeleteJobIndex, enqueueUpsertJobIndex } from "../search/jobs.indexer";
+import { slugify } from "../utils/slug";
 
 type DBClient = PrismaClient | PrismaTransactionClient;
 
@@ -54,11 +55,34 @@ async function mapCompaniesWithOpenJobCount<
   }));
 }
 
-async function fetchCompanyPublicById(id: number) {
-  if (isNaN(id)) return null;
+async function allocateCompanySlug(
+  name: string,
+  excludeId?: number,
+  tx: DBClient = prisma,
+) {
+  const base = slugify(name);
+  let candidate = base;
+  let n = 2;
+  while (n < 500) {
+    const found = await tx.company.findFirst({
+      where: {
+        slug: candidate,
+        ...(excludeId ? { NOT: { id: excludeId } } : {}),
+      },
+      select: { id: true },
+    });
+    if (!found) return candidate;
+    const suffix = `-${n}`;
+    candidate = `${base.slice(0, 180 - suffix.length)}${suffix}`;
+    n += 1;
+  }
+  throw new HttpException("Không tạo được đường dẫn công ty", 500);
+}
+
+async function fetchCompanyPublic(where: Prisma.CompanyWhereInput) {
   const now = new Date();
   const row = await prisma.company.findFirst({
-    where: { id, status: true, deletedAt: null },
+    where: { ...where, status: true, deletedAt: null },
     include: {
       province: true,
       district: true,
@@ -155,14 +179,15 @@ export const companyService = {
       categoryIdFilter != null
         ? await (async () => {
             const id = Number(categoryIdFilter);
-            if (!Number.isFinite(id) || id <= 0) return null;
+            if (!Number.isFinite(id) || id === 0) return null;
+            const parentKey = Math.abs(Math.trunc(id));
             const parent = await prisma.categoryParent.findFirst({
-              where: { id: Math.trunc(id), deletedAt: null },
+              where: { id: parentKey, deletedAt: null },
               select: { id: true },
             });
             if (parent) return parent.id;
             const child = await prisma.category.findFirst({
-              where: { id: Math.trunc(id), deletedAt: null },
+              where: { id: parentKey, deletedAt: null },
               select: { parentCategoryId: true },
             });
             return child?.parentCategoryId ?? null;
@@ -356,13 +381,27 @@ export const companyService = {
     return { ...row, categories: normalized };
   },
 
+  async getPublicByKey(key: string) {
+    const trimmed = key.trim();
+    if (!trimmed) return null;
+    if (/^\d+$/.test(trimmed)) {
+      return this.getPublicById(Number(trimmed));
+    }
+    const found = await prisma.company.findFirst({
+      where: { slug: trimmed, status: true, deletedAt: null },
+      select: { id: true },
+    });
+    if (!found) return null;
+    return this.getPublicById(found.id);
+  },
+
   async getPublicById(id: number) {
     if (isNaN(id)) return null;
     if (env.CACHE_ENABLED) {
       const hit = await cacheGetJson<unknown>(CacheKeys.companyPublicDetail(id));
-      if (hit) return hit as Awaited<ReturnType<typeof fetchCompanyPublicById>>;
+      if (hit) return hit as Awaited<ReturnType<typeof fetchCompanyPublic>>;
     }
-    const row = await fetchCompanyPublicById(id);
+    const row = await fetchCompanyPublic({ id });
     if (row && env.CACHE_ENABLED) {
       await cacheSetJson(
         CacheKeys.companyPublicDetail(id),
@@ -486,9 +525,12 @@ export const companyService = {
     await this.checkCompanyWebsiteExists(normalizeUrl(companyData.website));
     await locationService.validateProvinceDistrict(provinceId, districtId);
 
+    const slug = await allocateCompanySlug(companyData.name, undefined, tx);
+
     const company = await tx.company.create({
       data: {
         ...companyData,
+        slug,
         status: companyData.status ?? true,
 
         ...(provinceId && {
@@ -569,10 +611,15 @@ export const companyService = {
       await locationService.validateProvinceDistrict(provinceId, districtId);
     }
 
+    const slug = companyData.name
+      ? await allocateCompanySlug(companyData.name, id)
+      : undefined;
+
     const company = await prisma.company.update({
       where: { id },
       data: {
         ...companyData,
+        ...(slug ? { slug } : {}),
 
         ...(provinceId && {
           province: {

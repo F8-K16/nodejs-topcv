@@ -126,7 +126,7 @@ export const emailDigestService = {
           return {
             title: j.title,
             companyName: j.company.name,
-            jobUrl: `${origin}/jobs/${j.id}`,
+            jobUrl: `${origin}/jobs/${j.slug || j.id}`,
             salaryLabel: formatDigestSalary(j.minSalary, j.maxSalary),
             categoryName: j.category?.name ?? "",
             locationLabel: loc,
@@ -195,7 +195,7 @@ export const emailDigestService = {
         const items: DigestJobItem[] = rows.map((r) => ({
           title: r.title,
           companyName: r.companyName,
-          jobUrl: `${origin}/jobs/${r.id}`,
+          jobUrl: `${origin}/jobs/${r.slug || r.id}`,
           salaryLabel: formatDigestSalary(r.minSalary, r.maxSalary),
           categoryName: r.categoryName,
           locationLabel: r.locationLabel,

@@ -685,7 +685,7 @@ export const candidateRecommendationService = {
             : Promise.resolve([] as Array<{ name: string }>),
         ]);
 
-        const rerankJobs = scored.slice(0, 40).map((j) => ({
+        const rerankJobs = scored.slice(0, 24).map((j) => ({
           id: j.id,
           title: j.title,
           category: j.category?.name ?? "",
@@ -776,6 +776,7 @@ export const candidateRecommendationService = {
   ): Promise<
     Array<{
       id: number;
+      slug: string;
       title: string;
       companyName: string;
       minSalary: number | null;
@@ -863,6 +864,7 @@ export const candidateRecommendationService = {
         "—";
       return {
         id: job.id,
+        slug: job.slug,
         title: job.title,
         companyName: job.company.name,
         minSalary: job.minSalary,

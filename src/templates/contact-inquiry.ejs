@@ -1,0 +1,10 @@
+<%- include('partials/email-top', { pageTitle: 'Liên hệ mới từ website' }) %>
+        <h1 class="email-title">Có tin nhắn liên hệ mới</h1>
+        <p class="email-text">
+          <strong><%= senderName %></strong>
+          (<a href="mailto:<%= senderEmail %>"><%= senderEmail %></a>) vừa gửi form liên hệ.
+        </p>
+        <p class="email-muted">Chủ đề: <%= topic %></p>
+        <div class="reason-box" style="background:#f8fafc;border-color:#e2e8f0;color:#0f172a;white-space:pre-wrap;"><%= body %></div>
+        <p class="email-text" style="margin-bottom: 0">Trả lời trực tiếp email người gửi để tiếp tục hỗ trợ.</p>
+<%- include('partials/email-bottom') %>

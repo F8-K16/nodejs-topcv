@@ -7,6 +7,7 @@ declare module "express" {
       isVerified: boolean;
       roles: string[];
       permissions: string[];
+      totpEnabled?: boolean;
       createdAt: Date | null;
       updatedAt: Date | null;
     };

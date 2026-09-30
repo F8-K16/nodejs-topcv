@@ -66,6 +66,12 @@ const envSchema = z.object({
     .positive()
     .default(120),
 
+  CACHE_TTL_CANDIDATE_APPLICATIONS_SEC: z.coerce
+    .number()
+    .int()
+    .positive()
+    .default(90),
+
   JOBS_RECOMMENDED_POOL_SIZE: z.coerce
     .number()
     .int()
@@ -86,6 +92,7 @@ const envSchema = z.object({
   SMTP_PASSWORD: z.string().min(1, "SMTP_PASSWORD is required"),
   SMTP_FROM: z.string().min(1, "SMTP_FROM is required"),
   SMTP_FROM_NAME: z.string().min(1, "SMTP_FROM_NAME is required"),
+  CONTACT_INBOX_EMAIL: z.string().default(""),
 
   NOTIFICATION_PURGE_ENABLED: z.coerce.boolean().default(true),
 
@@ -136,6 +143,22 @@ const envSchema = z.object({
     .int()
     .positive()
     .default(604_800),
+  /**
+   * Bật/tắt riêng tính năng AI rerank gợi ý việc làm (tốn nhiều token nhất
+   * nhưng ít giá trị nhất so với các tính năng AI khác) mà không cần tắt
+   * toàn bộ AI_ENABLED — dùng để cắt chi phí nhanh khi cần.
+   */
+  AI_JOBS_RERANK_ENABLED: z.coerce.boolean().default(true),
+  /**
+   * Rerank được cache theo (ứng viên + preferences + ngày) nên trong 1 ngày
+   * chỉ gọi Gemini tối đa 1 lần/ứng viên bất kể tin tuyển dụng thay đổi bao
+   * nhiêu lần hay trang gợi ý việc được tải lại bao nhiêu lần.
+   */
+  CACHE_TTL_AI_JOBS_RERANK_SEC: z.coerce
+    .number()
+    .int()
+    .positive()
+    .default(90_000),
 
   CLOUDINARY_CLOUD_NAME: z.string().default(""),
   NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME: z.string().default(""),

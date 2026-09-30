@@ -33,8 +33,15 @@ export const authController = {
   async login(req: Request, res: Response) {
     const { email, password } = req.body;
     const data = await authService.login(email, password);
-
+    if (data.twoFactorRequired) {
+      return res.json({
+        twoFactorRequired: true,
+        challengeToken: data.challengeToken,
+      });
+    }
     return res.json({
+      twoFactorRequired: false,
+      twoFactorSetupRequired: data.twoFactorSetupRequired,
       accessToken: data.accessToken,
       refreshToken: data.refreshToken,
     });
@@ -102,11 +109,51 @@ export const authController = {
 
   async googleLogin(req: Request, res: Response) {
     const data = await authService.loginWithGoogleProfile(req.body);
+    if (data.twoFactorRequired) {
+      return res.json({
+        twoFactorRequired: true,
+        challengeToken: data.challengeToken,
+      });
+    }
     return res.json({
+      twoFactorRequired: false,
+      twoFactorSetupRequired: data.twoFactorSetupRequired,
       accessToken: data.accessToken,
       refreshToken: data.refreshToken,
       user: data.user,
     });
+  },
+  async verifyAdminTotp(req: Request, res: Response) {
+    const { challengeToken, code } = req.body as {
+      challengeToken: string;
+      code: string;
+    };
+    const data = await authService.verifyAdminTotpLogin(challengeToken, code);
+    return res.json({
+      twoFactorRequired: false,
+      twoFactorSetupRequired: false,
+      accessToken: data.accessToken,
+      refreshToken: data.refreshToken,
+      user: data.user,
+    });
+  },
+  async setupAdminTotp(req: Request, res: Response) {
+    const data = await authService.setupAdminTotp(req.user!.id);
+    return res.json(data);
+  },
+  async enableAdminTotp(req: Request, res: Response) {
+    const { code } = req.body as { code: string };
+    const data = await authService.enableAdminTotp(req.user!.id, code);
+    return res.json(data);
+  },
+  async disableAdminTotp(req: Request, res: Response) {
+    const { code, password } = req.body as { code: string; password: string };
+    const data = await authService.disableAdminTotp(
+      req.user!.id,
+      password,
+      code,
+    );
+    return res.json(data);
   },
   async profile(req: Request, res: Response) {
     return res.json({

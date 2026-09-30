@@ -8,13 +8,17 @@ import { env } from "../config/env";
 import {
   CacheKeys,
   cacheGetJson,
-  cacheSetJsonPersistent,
+  cacheSetJson,
 } from "../utils/cache";
 import { locationService } from "./location.service";
 import {
   buildCategoryTree,
 } from "../utils/category_hierarchy";
 import { prisma } from "../utils/prisma";
+import {
+  resolvePublicFeatures,
+  type PublicFeatures,
+} from "../utils/feature-flags";
 
 export type PublicMetadataPayload = {
   categories: unknown;
@@ -25,6 +29,7 @@ export type PublicMetadataPayload = {
   EXPERIENCE_OPTIONS: typeof EXPERIENCE_OPTIONS;
   SalaryRange: typeof SalaryRange;
   SalaryRangeOptions: typeof SalaryRangeOptions;
+  features: PublicFeatures;
 };
 
 type PublicMetadataCategoriesCache = Pick<
@@ -32,9 +37,18 @@ type PublicMetadataCategoriesCache = Pick<
   "categories" | "categoryTree" | "categoryParents"
 >;
 
+function currentPublicFeatures(): PublicFeatures {
+  return resolvePublicFeatures({
+    aiEnabled: env.AI_ENABLED,
+    geminiApiKey: env.GEMINI_API_KEY,
+    opensearchEnabled: env.OPENSEARCH_ENABLED,
+    opensearchNode: env.OPENSEARCH_NODE,
+  });
+}
+
 function getPublicMetadataStaticOptions(): Omit<
   PublicMetadataPayload,
-  "categories" | "categoryTree" | "categoryParents" | "provinces"
+  "categories" | "categoryTree" | "categoryParents" | "provinces" | "features"
 > {
   return {
     JOB_TYPE_OPTIONS,
@@ -52,15 +66,22 @@ export async function getPublicMetadata(): Promise<PublicMetadataPayload> {
   if (env.CACHE_ENABLED) {
     const hit = await cacheGetJson<PublicMetadataCategoriesCache>(key);
     if (hit) {
-      return { ...hit, ...staticOpts, provinces };
+      return {
+        ...hit,
+        ...staticOpts,
+        provinces,
+        features: currentPublicFeatures(),
+      };
     }
   }
 
   const parents = await prisma.categoryParent.findMany({
+    where: { deletedAt: null },
     select: { id: true, name: true, slug: true },
     orderBy: { name: "asc" },
   });
   const children = await prisma.category.findMany({
+    where: { deletedAt: null },
     select: { id: true, name: true, slug: true, parentCategoryId: true },
     orderBy: [{ parentCategoryId: "asc" }, { name: "asc" }],
   });
@@ -86,15 +107,20 @@ export async function getPublicMetadata(): Promise<PublicMetadataPayload> {
     categoryTree: tree,
     categoryParents: parents,
     provinces,
+    features: currentPublicFeatures(),
   };
 
   if (env.CACHE_ENABLED) {
-    await cacheSetJsonPersistent(key, {
-      categories: payload.categories,
-      categoryTree: payload.categoryTree,
-      categoryParents: payload.categoryParents,
-    });
+    await cacheSetJson(
+      key,
+      {
+        categories: payload.categories,
+        categoryTree: payload.categoryTree,
+        categoryParents: payload.categoryParents,
+      },
+      env.CACHE_TTL_METADATA_SEC,
+    );
   }
 
-  return payload;
+  return { ...payload, features: currentPublicFeatures() };
 }

@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import { sendError } from "../utils/response";
 import { jobService } from "../services/job.service";
 import { categoryService } from "../services/category.service";
 import { companyService } from "../services/company.service";
@@ -55,6 +56,25 @@ export const jobController = {
   },
 
   patchModeration: async (req: Request, res: Response) => {
+    const status = String(req.body.status ?? "");
+    const user = req.user;
+    const isAdmin = Boolean(user?.roles.includes("ADMIN"));
+    if (!isAdmin) {
+      const perms = user?.permissions ?? [];
+      const allowed =
+        status === "REJECTED"
+          ? perms.includes("admin:jobs:reject") ||
+            perms.includes("admin:jobs:approve")
+          : perms.includes("admin:jobs:approve");
+      if (!allowed) {
+        return sendError(res, 403, {
+          code: "FORBIDDEN",
+          message: "Forbidden",
+          traceId: req.requestId,
+        });
+      }
+    }
+
     const jobId = Number(req.params.id);
     const job = await jobService.setModeration(
       jobId,

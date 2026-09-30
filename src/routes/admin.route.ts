@@ -1,7 +1,10 @@
 import express from "express";
 
 import { validate } from "../middlewares/validate.middleware";
-import { requirePermission } from "../middlewares/auth.middleware";
+import {
+  requireAnyPermission,
+  requirePermission,
+} from "../middlewares/auth.middleware";
 import { registerSchema, updateUserSchema } from "../schemas/auth.schema";
 
 import {
@@ -26,6 +29,10 @@ import {
 } from "../schemas/job.schema";
 import { createSkillSchema, updateSkillSchema } from "../schemas/skill.schema";
 import {
+  createBlogPostSchema,
+  updateBlogPostSchema,
+} from "../schemas/blog.schema";
+import {
   createDistrictSchema,
   createProvinceSchema,
   updateDistrictSchema,
@@ -49,6 +56,8 @@ import {
 } from "../schemas/resume.schema";
 import { applicationController } from "../controllers/application.controller";
 import { updateApplicationStatusSchema } from "../schemas/application.schema";
+import { blogController } from "../controllers/blog.controller";
+import { contactController } from "../controllers/contact.controller";
 import { cvController } from "../controllers/cv.controller";
 import {
   createCvTemplateSchema,
@@ -265,7 +274,7 @@ router.patch(
 );
 router.patch(
   "/jobs/:id/moderation",
-  requirePermission("admin:jobs:approve"),
+  requireAnyPermission("admin:jobs:approve", "admin:jobs:reject"),
   validate(patchJobModerationSchema),
   jobController.patchModeration,
 );
@@ -430,6 +439,40 @@ router.patch(
   requirePermission("admin:applications:update"),
   validate(updateApplicationStatusSchema),
   applicationController.updateStatus,
+);
+
+router.get(
+  "/blog-posts",
+  requirePermission("admin:blog:read"),
+  blogController.index,
+);
+router.get(
+  "/blog-posts/:id",
+  requirePermission("admin:blog:read"),
+  blogController.show,
+);
+router.post(
+  "/blog-posts",
+  requirePermission("admin:blog:create"),
+  validate(createBlogPostSchema),
+  blogController.store,
+);
+router.put(
+  "/blog-posts/:id",
+  requirePermission("admin:blog:update"),
+  validate(updateBlogPostSchema),
+  blogController.update,
+);
+router.delete(
+  "/blog-posts/:id",
+  requirePermission("admin:blog:delete"),
+  blogController.destroy,
+);
+
+router.get(
+  "/contact-messages",
+  requirePermission("admin:contact:read"),
+  contactController.index,
 );
 
 // CV TEMPLATES

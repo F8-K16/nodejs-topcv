@@ -3,7 +3,7 @@ model Employer {
   userId    Int            @unique
   companyId Int?
   status    EmployerStatus @default(PENDING)
-  company               Company?         @relation(fields: [companyId], references: [id])
+  company               Company?         @relation(fields: [companyId], references: [id], onDelete: SetNull)
   user                  User             @relation(fields: [userId], references: [id])
   jobs                  Job[]
 

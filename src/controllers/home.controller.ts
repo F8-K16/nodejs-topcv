@@ -14,7 +14,8 @@ export const homeController = {
     });
   },
 
-  metadata: async (req: Request, res: Response) => {
+  metadata: async (_req: Request, res: Response) => {
+    res.set("Cache-Control", "private, no-store, must-revalidate, max-age=0");
     const payload = await getPublicMetadata();
     res.json(payload);
   },
@@ -35,17 +36,29 @@ export const homeController = {
   },
   getDetailJob: async (req: Request, res: Response) => {
     res.set("Cache-Control", "private, no-store, must-revalidate, max-age=0");
-    const job = await jobService.getJobById(Number(req.params.id), "public");
+    const job = await jobService.getPublicJobByKey(String(req.params.id ?? ""));
     if (!job) {
       return res.status(404).json({
         success: false,
         message: "Không tìm thấy việc làm hoặc tin đã hết hạn",
       });
     }
-    const newViews = await jobService.incrementPublicJobView(
-      Number(req.params.id),
-    );
+    const newViews = await jobService.incrementPublicJobView(job.id);
     res.json(newViews != null ? { ...job, viewCount: newViews } : job);
+  },
+
+  trackJobViewSource: async (req: Request, res: Response) => {
+    const jobId = Number(req.params.id);
+    const source =
+      typeof req.body?.source === "string" ? req.body.source : undefined;
+    const data = await jobService.trackPublicJobViewSource(jobId, source);
+    if (!data) {
+      return res.status(404).json({
+        success: false,
+        message: "Không tìm thấy việc làm",
+      });
+    }
+    res.json({ success: true, data });
   },
   getCompanies: async (req: Request, res: Response) => {
     const companies = await companyService.getAll({
@@ -60,8 +73,7 @@ export const homeController = {
     res.json(data);
   },
   getCompanyDetail: async (req: Request, res: Response) => {
-    const id = Number(req.params.id);
-    const company = await companyService.getPublicById(id);
+    const company = await companyService.getPublicByKey(String(req.params.id ?? ""));
     if (!company) {
       return res.status(404).json({
         success: false,

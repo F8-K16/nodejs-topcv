@@ -1,8 +1,9 @@
 model Company {
   id          Int               @id @default(autoincrement())
   name        String            @unique
+  slug        String            @unique @db.VarChar(180)
   description String?           @db.Text
-  logo        String?
+  logo        String?           @db.VarChar(512)
   website     String?
   location    String
   status      Boolean           @default(false)

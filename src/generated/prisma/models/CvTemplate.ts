@@ -39,7 +39,7 @@ export type CvTemplateMinAggregateOutputType = {
   name: string | null
   description: string | null
   thumbnailUrl: string | null
-  isActive: boolean | null
+  status: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
   deletedAt: Date | null
@@ -50,7 +50,7 @@ export type CvTemplateMaxAggregateOutputType = {
   name: string | null
   description: string | null
   thumbnailUrl: string | null
-  isActive: boolean | null
+  status: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
   deletedAt: Date | null
@@ -62,7 +62,7 @@ export type CvTemplateCountAggregateOutputType = {
   description: number
   thumbnailUrl: number
   templateData: number
-  isActive: number
+  status: number
   createdAt: number
   updatedAt: number
   deletedAt: number
@@ -83,7 +83,7 @@ export type CvTemplateMinAggregateInputType = {
   name?: true
   description?: true
   thumbnailUrl?: true
-  isActive?: true
+  status?: true
   createdAt?: true
   updatedAt?: true
   deletedAt?: true
@@ -94,7 +94,7 @@ export type CvTemplateMaxAggregateInputType = {
   name?: true
   description?: true
   thumbnailUrl?: true
-  isActive?: true
+  status?: true
   createdAt?: true
   updatedAt?: true
   deletedAt?: true
@@ -106,7 +106,7 @@ export type CvTemplateCountAggregateInputType = {
   description?: true
   thumbnailUrl?: true
   templateData?: true
-  isActive?: true
+  status?: true
   createdAt?: true
   updatedAt?: true
   deletedAt?: true
@@ -205,7 +205,7 @@ export type CvTemplateGroupByOutputType = {
   description: string | null
   thumbnailUrl: string | null
   templateData: runtime.JsonValue
-  isActive: boolean
+  status: boolean
   createdAt: Date
   updatedAt: Date
   deletedAt: Date | null
@@ -216,7 +216,7 @@ export type CvTemplateGroupByOutputType = {
   _max: CvTemplateMaxAggregateOutputType | null
 }
 
-type GetCvTemplateGroupByPayload<T extends CvTemplateGroupByArgs> = Prisma.PrismaPromise<
+export type GetCvTemplateGroupByPayload<T extends CvTemplateGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<CvTemplateGroupByOutputType, T['by']> &
       {
@@ -240,7 +240,7 @@ export type CvTemplateWhereInput = {
   description?: Prisma.StringNullableFilter<"CvTemplate"> | string | null
   thumbnailUrl?: Prisma.StringNullableFilter<"CvTemplate"> | string | null
   templateData?: Prisma.JsonFilter<"CvTemplate">
-  isActive?: Prisma.BoolFilter<"CvTemplate"> | boolean
+  status?: Prisma.BoolFilter<"CvTemplate"> | boolean
   createdAt?: Prisma.DateTimeFilter<"CvTemplate"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"CvTemplate"> | Date | string
   deletedAt?: Prisma.DateTimeNullableFilter<"CvTemplate"> | Date | string | null
@@ -253,7 +253,7 @@ export type CvTemplateOrderByWithRelationInput = {
   description?: Prisma.SortOrderInput | Prisma.SortOrder
   thumbnailUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   templateData?: Prisma.SortOrder
-  isActive?: Prisma.SortOrder
+  status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -270,7 +270,7 @@ export type CvTemplateWhereUniqueInput = Prisma.AtLeast<{
   description?: Prisma.StringNullableFilter<"CvTemplate"> | string | null
   thumbnailUrl?: Prisma.StringNullableFilter<"CvTemplate"> | string | null
   templateData?: Prisma.JsonFilter<"CvTemplate">
-  isActive?: Prisma.BoolFilter<"CvTemplate"> | boolean
+  status?: Prisma.BoolFilter<"CvTemplate"> | boolean
   createdAt?: Prisma.DateTimeFilter<"CvTemplate"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"CvTemplate"> | Date | string
   deletedAt?: Prisma.DateTimeNullableFilter<"CvTemplate"> | Date | string | null
@@ -283,7 +283,7 @@ export type CvTemplateOrderByWithAggregationInput = {
   description?: Prisma.SortOrderInput | Prisma.SortOrder
   thumbnailUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   templateData?: Prisma.SortOrder
-  isActive?: Prisma.SortOrder
+  status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -303,7 +303,7 @@ export type CvTemplateScalarWhereWithAggregatesInput = {
   description?: Prisma.StringNullableWithAggregatesFilter<"CvTemplate"> | string | null
   thumbnailUrl?: Prisma.StringNullableWithAggregatesFilter<"CvTemplate"> | string | null
   templateData?: Prisma.JsonWithAggregatesFilter<"CvTemplate">
-  isActive?: Prisma.BoolWithAggregatesFilter<"CvTemplate"> | boolean
+  status?: Prisma.BoolWithAggregatesFilter<"CvTemplate"> | boolean
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"CvTemplate"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"CvTemplate"> | Date | string
   deletedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"CvTemplate"> | Date | string | null
@@ -314,7 +314,7 @@ export type CvTemplateCreateInput = {
   description?: string | null
   thumbnailUrl?: string | null
   templateData: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  isActive?: boolean
+  status?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -327,7 +327,7 @@ export type CvTemplateUncheckedCreateInput = {
   description?: string | null
   thumbnailUrl?: string | null
   templateData: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  isActive?: boolean
+  status?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -339,7 +339,7 @@ export type CvTemplateUpdateInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   thumbnailUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   templateData?: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  status?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -352,7 +352,7 @@ export type CvTemplateUncheckedUpdateInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   thumbnailUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   templateData?: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  status?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -365,7 +365,7 @@ export type CvTemplateCreateManyInput = {
   description?: string | null
   thumbnailUrl?: string | null
   templateData: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  isActive?: boolean
+  status?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -376,7 +376,7 @@ export type CvTemplateUpdateManyMutationInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   thumbnailUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   templateData?: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  status?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -388,7 +388,7 @@ export type CvTemplateUncheckedUpdateManyInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   thumbnailUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   templateData?: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  status?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -411,7 +411,7 @@ export type CvTemplateCountOrderByAggregateInput = {
   description?: Prisma.SortOrder
   thumbnailUrl?: Prisma.SortOrder
   templateData?: Prisma.SortOrder
-  isActive?: Prisma.SortOrder
+  status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrder
@@ -426,7 +426,7 @@ export type CvTemplateMaxOrderByAggregateInput = {
   name?: Prisma.SortOrder
   description?: Prisma.SortOrder
   thumbnailUrl?: Prisma.SortOrder
-  isActive?: Prisma.SortOrder
+  status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrder
@@ -437,7 +437,7 @@ export type CvTemplateMinOrderByAggregateInput = {
   name?: Prisma.SortOrder
   description?: Prisma.SortOrder
   thumbnailUrl?: Prisma.SortOrder
-  isActive?: Prisma.SortOrder
+  status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrder
@@ -466,7 +466,7 @@ export type CvTemplateCreateWithoutCvsInput = {
   description?: string | null
   thumbnailUrl?: string | null
   templateData: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  isActive?: boolean
+  status?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -478,7 +478,7 @@ export type CvTemplateUncheckedCreateWithoutCvsInput = {
   description?: string | null
   thumbnailUrl?: string | null
   templateData: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  isActive?: boolean
+  status?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -505,7 +505,7 @@ export type CvTemplateUpdateWithoutCvsInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   thumbnailUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   templateData?: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  status?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -517,7 +517,7 @@ export type CvTemplateUncheckedUpdateWithoutCvsInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   thumbnailUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   templateData?: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  status?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -560,7 +560,7 @@ export type CvTemplateSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   description?: boolean
   thumbnailUrl?: boolean
   templateData?: boolean
-  isActive?: boolean
+  status?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   deletedAt?: boolean
@@ -576,13 +576,13 @@ export type CvTemplateSelectScalar = {
   description?: boolean
   thumbnailUrl?: boolean
   templateData?: boolean
-  isActive?: boolean
+  status?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   deletedAt?: boolean
 }
 
-export type CvTemplateOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "description" | "thumbnailUrl" | "templateData" | "isActive" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["cvTemplate"]>
+export type CvTemplateOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "description" | "thumbnailUrl" | "templateData" | "status" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["cvTemplate"]>
 export type CvTemplateInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   cvs?: boolean | Prisma.CvTemplate$cvsArgs<ExtArgs>
   _count?: boolean | Prisma.CvTemplateCountOutputTypeDefaultArgs<ExtArgs>
@@ -599,7 +599,7 @@ export type $CvTemplatePayload<ExtArgs extends runtime.Types.Extensions.Internal
     description: string | null
     thumbnailUrl: string | null
     templateData: runtime.JsonValue
-    isActive: boolean
+    status: boolean
     createdAt: Date
     updatedAt: Date
     deletedAt: Date | null
@@ -978,7 +978,7 @@ export interface CvTemplateFieldRefs {
   readonly description: Prisma.FieldRef<"CvTemplate", 'String'>
   readonly thumbnailUrl: Prisma.FieldRef<"CvTemplate", 'String'>
   readonly templateData: Prisma.FieldRef<"CvTemplate", 'Json'>
-  readonly isActive: Prisma.FieldRef<"CvTemplate", 'Boolean'>
+  readonly status: Prisma.FieldRef<"CvTemplate", 'Boolean'>
   readonly createdAt: Prisma.FieldRef<"CvTemplate", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"CvTemplate", 'DateTime'>
   readonly deletedAt: Prisma.FieldRef<"CvTemplate", 'DateTime'>

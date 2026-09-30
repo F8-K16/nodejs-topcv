@@ -10,6 +10,7 @@ import { HttpException } from "../utils/exception";
 import { jobService } from "./job.service";
 import { applicationService } from "./application.service";
 import { companyService } from "./company.service";
+import { skillService } from "./skill.service";
 import type { JobDTO } from "../types/job.type";
 import { NotificationType, notificationService } from "./notification.service";
 import { resolveResumePreviewForEmployer } from "../utils/application-resume-preview";
@@ -240,6 +241,86 @@ export const employerPortalService = {
     };
   },
 
+  async jobAnalytics(userId: number) {
+    const employer = await getApprovedEmployer(userId);
+    const companyId = requireCompanyId(employer);
+
+    const jobs = await prisma.job.findMany({
+      where: { companyId, deletedAt: null },
+      orderBy: { id: "desc" },
+      take: 50,
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        moderationStatus: true,
+        viewCount: true,
+        createdAt: true,
+        _count: { select: { applications: true } },
+        viewSources: {
+          select: { source: true, views: true },
+          orderBy: { views: "desc" },
+        },
+      },
+    });
+
+    const rows = jobs.map((job) => {
+      const views = job.viewCount ?? 0;
+      const applications = job._count.applications;
+      const conversionRate =
+        views > 0 ? Math.round((applications / views) * 1000) / 10 : 0;
+      return {
+        id: job.id,
+        title: job.title,
+        slug: job.slug,
+        moderationStatus: job.moderationStatus,
+        createdAt: job.createdAt,
+        views,
+        applications,
+        conversionRate,
+        sources: job.viewSources.map((s) => ({
+          source: s.source,
+          views: s.views,
+        })),
+      };
+    });
+
+    const totals = rows.reduce(
+      (acc, row) => {
+        acc.views += row.views;
+        acc.applications += row.applications;
+        return acc;
+      },
+      { views: 0, applications: 0 },
+    );
+
+    const sourceTotals = new Map<string, number>();
+    for (const row of rows) {
+      for (const src of row.sources) {
+        sourceTotals.set(
+          src.source,
+          (sourceTotals.get(src.source) ?? 0) + src.views,
+        );
+      }
+    }
+
+    return {
+      summary: {
+        jobs: rows.length,
+        views: totals.views,
+        applications: totals.applications,
+        conversionRate:
+          totals.views > 0
+            ? Math.round((totals.applications / totals.views) * 1000) / 10
+            : 0,
+      },
+      sources: Array.from(sourceTotals.entries())
+        .map(([source, views]) => ({ source, views }))
+        .sort((a, b) => b.views - a.views),
+      jobs: rows,
+    };
+  },
+
   async formMeta(userId: number) {
     const employer = await getApprovedEmployer(userId);
     const companyId = requireCompanyId(employer);
@@ -272,6 +353,7 @@ export const employerPortalService = {
         orderBy: [{ name: "asc" }],
       }),
       prisma.skill.findMany({
+        where: { deletedAt: null },
         select: { id: true, name: true },
         orderBy: { name: "asc" },
         take: 3000,
@@ -298,6 +380,27 @@ export const employerPortalService = {
       selectedParentCategoryIds,
       skills,
     };
+  },
+
+  async listSkills(userId: number, search = "") {
+    await getApprovedEmployer(userId);
+    const q = search.trim();
+    const skills = await prisma.skill.findMany({
+      where: {
+        deletedAt: null,
+        ...(q ? { name: { contains: q } } : {}),
+      },
+      select: { id: true, name: true },
+      orderBy: { name: "asc" },
+      take: q ? 50 : 100,
+    });
+    return { skills };
+  },
+
+  async createSkill(userId: number, name: string) {
+    await getApprovedEmployer(userId);
+    const skill = await skillService.create(name.trim());
+    return { id: skill.id, name: skill.name };
   },
 
   async updateCompanyProfile(
@@ -639,111 +742,242 @@ export const employerPortalService = {
     return jobService.deleteJob(jobId);
   },
 
-  async getSuggestedCandidates(userId: number, limit = 24) {
+  async getSuggestedCandidates(
+    userId: number,
+    opts: {
+      limit?: number;
+      page?: number;
+      jobId?: number;
+      provinceId?: number;
+      experienceLevel?: string;
+    } = {},
+  ) {
     const employer = await getApprovedEmployer(userId);
     const companyId = requireCompanyId(employer);
-    const cap = Math.min(Math.max(1, limit), 50);
 
-    const recentApps = await prisma.application.findMany({
-      where: { job: { companyId } },
-      orderBy: { createdAt: "desc" },
-      take: 150,
-      include: {
-        candidate: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                username: true,
-                email: true,
-                avatar: true,
-              },
-            },
-            province: { select: { name: true } },
-            district: { select: { name: true } },
-          },
+    const page = Math.max(1, Number(opts.page) || 1);
+    const limit = Math.min(Math.max(1, Number(opts.limit) || 20), 50);
+    const POOL = 200; // candidates to score before pagination
+
+    // ── Resolve job context (specific job or all approved jobs of company) ──
+    type JobContext = {
+      id: number;
+      categoryId: number;
+      jobType: string;
+      experienceLevel: string;
+      provinceId: number | null;
+      districtId: number | null;
+      skillIds: number[];
+    };
+
+    let jobContexts: JobContext[] = [];
+    if (opts.jobId) {
+      const job = await prisma.job.findFirst({
+        where: {
+          id: opts.jobId,
+          companyId,
+          deletedAt: null,
         },
-        job: { select: { id: true, title: true } },
-      },
-    });
-
-    const appliedOrdered: {
-      candidateId: number;
-      user: {
-        id: number;
-        username: string;
-        email: string;
-        avatar: string | null;
-      };
-      province: { name: string } | null;
-      district: { name: string } | null;
-      reason: "applied";
-      hint: string;
-    }[] = [];
-    const seenCandidate = new Set<number>();
-    for (const a of recentApps) {
-      const cid = a.candidateId;
-      if (seenCandidate.has(cid)) continue;
-      seenCandidate.add(cid);
-      appliedOrdered.push({
-        candidateId: cid,
-        user: a.candidate.user,
-        province: a.candidate.province,
-        district: a.candidate.district,
-        reason: "applied",
-        hint: `Đã ứng tuyển: ${a.job.title}`,
+        include: { jobSkills: { select: { skillId: true } }, company: { select: { provinceId: true, districtId: true } } },
       });
-      if (appliedOrdered.length >= cap) break;
+      if (job) {
+        jobContexts = [{
+          id: job.id,
+          categoryId: job.categoryId,
+          jobType: String(job.jobType),
+          experienceLevel: String(job.experienceLevel),
+          provinceId: job.company.provinceId,
+          districtId: job.company.districtId,
+          skillIds: job.jobSkills.map((s) => s.skillId),
+        }];
+      }
     }
 
-    const jobCategoryRows = await prisma.job.findMany({
-      where: {
-        companyId,
-        deletedAt: null,
-        moderationStatus: JobModerationStatus.APPROVED,
+    if (!jobContexts.length) {
+      const jobs = await prisma.job.findMany({
+        where: {
+          companyId,
+          deletedAt: null,
+          moderationStatus: JobModerationStatus.APPROVED,
+        },
+        include: { jobSkills: { select: { skillId: true } }, company: { select: { provinceId: true, districtId: true } } },
+        orderBy: { createdAt: "desc" },
+        take: 10,
+      });
+      jobContexts = jobs.map((j) => ({
+        id: j.id,
+        categoryId: j.categoryId,
+        jobType: String(j.jobType),
+        experienceLevel: String(j.experienceLevel),
+        provinceId: j.company.provinceId,
+        districtId: j.company.districtId,
+        skillIds: j.jobSkills.map((s) => s.skillId),
+      }));
+    }
+
+    // Sets for fast lookup
+    const allCategoryIds = [...new Set(jobContexts.map((j) => j.categoryId))];
+    const allSkillIds = [...new Set(jobContexts.flatMap((j) => j.skillIds))];
+    const allProvinceIds = [...new Set(jobContexts.map((j) => j.provinceId).filter((v): v is number => v != null))];
+    const allDistrictIds = [...new Set(jobContexts.map((j) => j.districtId).filter((v): v is number => v != null))];
+    const jobTypeSet = new Set(jobContexts.map((j) => j.jobType));
+    const expLevelSet = new Set(jobContexts.map((j) => j.experienceLevel));
+
+    const EXPERIENCE_RANK: Record<string, number> = {
+      INTERN: 0, FRESHER: 1, JUNIOR: 2, MIDDLE: 3, SENIOR: 4, LEAD: 5,
+    };
+
+    // ── Fetch candidate pool ─────────────────────────────────────────────────
+    // Build OR filter to catch any relevant candidate
+    const orFilters: Prisma.CandidateWhereInput[] = [];
+    if (allCategoryIds.length) {
+      orFilters.push({ candidateCategories: { some: { categoryId: { in: allCategoryIds } } } });
+    }
+    if (allSkillIds.length) {
+      orFilters.push({ candidateSkills: { some: { skillId: { in: allSkillIds } } } });
+    }
+    // Always include candidates who applied to company
+    orFilters.push({ applications: { some: { job: { companyId } } } });
+
+    const baseWhere: Prisma.CandidateWhereInput = {
+      ...(opts.provinceId != null ? { provinceId: opts.provinceId } : {}),
+      ...(opts.experienceLevel
+        ? { preference: { experienceLevel: opts.experienceLevel as never } }
+        : {}),
+      ...(orFilters.length ? { OR: orFilters } : {}),
+    };
+
+    const candidates = await prisma.candidate.findMany({
+      where: baseWhere,
+      take: POOL,
+      include: {
+        user: { select: { id: true, username: true, email: true, avatar: true } },
+        province: { select: { name: true } },
+        district: { select: { name: true } },
+        candidateSkills: { select: { skillId: true } },
+        candidateCategories: { select: { categoryId: true } },
+        preference: { select: { experienceLevel: true, jobType: true, isOpenToRemote: true, preferredProvinceId: true } },
+        applications: {
+          where: { job: { companyId } },
+          select: { job: { select: { title: true } } },
+          take: 1,
+          orderBy: { createdAt: "desc" },
+        },
       },
-      select: { categoryId: true },
-      distinct: ["categoryId"],
     });
-    const categoryIds = jobCategoryRows.map((j) => j.categoryId);
 
-    const appliedUserIds = new Set(appliedOrdered.map((r) => r.user.id));
+    // ── Score each candidate ─────────────────────────────────────────────────
+    const categoriesSet = new Set(allCategoryIds);
+    const skillsSet = new Set(allSkillIds);
+    const provincesSet = new Set(allProvinceIds);
+    const districtsSet = new Set(allDistrictIds);
 
-    const categoryRows =
-      categoryIds.length > 0 && appliedOrdered.length < cap
-        ? await prisma.candidate.findMany({
-            where: {
-              candidateCategories: {
-                some: { categoryId: { in: categoryIds } },
-              },
-              userId: { notIn: [...appliedUserIds] },
-            },
-            take: cap - appliedOrdered.length,
-            include: {
-              user: {
-                select: {
-                  id: true,
-                  username: true,
-                  email: true,
-                  avatar: true,
-                },
-              },
-              province: { select: { name: true } },
-              district: { select: { name: true } },
-            },
-          })
-        : [];
+    type ScoredRow = {
+      candidateId: number;
+      user: { id: number; username: string; email: string; avatar: string | null };
+      province: { name: string } | null;
+      district: { name: string } | null;
+      score: number;
+      reason: "applied" | "category_match" | "skill_match" | "multi_match";
+      matchedSkillCount: number;
+      matchedCategoryCount: number;
+      hint: string;
+    };
 
-    const fromCategory = categoryRows.map((c) => ({
-      candidateId: c.id,
-      user: c.user,
-      province: c.province,
-      district: c.district,
-      reason: "category_match" as const,
-      hint: "Khớp ngành với tin đang tuyển của công ty",
-    }));
+    const scored: ScoredRow[] = candidates.map((c) => {
+      let score = 0;
+      const signals: string[] = [];
 
-    return { items: [...appliedOrdered, ...fromCategory].slice(0, cap) };
+      const appliedJob = c.applications[0]?.job?.title;
+      if (appliedJob) {
+        score += 30;
+        signals.push("applied");
+      }
+
+      const cCategories = new Set(c.candidateCategories.map((r) => r.categoryId));
+      const matchedCats = [...cCategories].filter((id) => categoriesSet.has(id)).length;
+      if (matchedCats > 0) {
+        score += Math.min(matchedCats * 10, 20);
+        signals.push("category");
+      }
+
+      const cSkills = new Set(c.candidateSkills.map((r) => r.skillId));
+      const matchedSkills = [...cSkills].filter((id) => skillsSet.has(id)).length;
+      if (matchedSkills > 0) {
+        score += Math.min(matchedSkills * 5, 25);
+        signals.push("skill");
+      }
+
+      const prefProvince = c.preference?.preferredProvinceId ?? null;
+      if (prefProvince != null && provincesSet.has(prefProvince)) {
+        score += 8;
+        signals.push("location");
+      } else if (c.provinceId != null && provincesSet.has(c.provinceId)) {
+        score += 5;
+        signals.push("location");
+      }
+      if (c.districtId != null && districtsSet.has(c.districtId)) score += 3;
+
+      const prefExp = c.preference?.experienceLevel != null ? String(c.preference.experienceLevel) : null;
+      if (prefExp && expLevelSet.has(prefExp)) {
+        score += 8;
+        signals.push("experience");
+      } else if (prefExp) {
+        const prefRank = EXPERIENCE_RANK[prefExp] ?? -1;
+        let minDist = Infinity;
+        for (const jExp of expLevelSet) {
+          const jRank = EXPERIENCE_RANK[jExp] ?? -1;
+          if (prefRank >= 0 && jRank >= 0) minDist = Math.min(minDist, Math.abs(prefRank - jRank));
+        }
+        if (minDist === 1) score += 4;
+        else if (minDist >= 2) score -= 3;
+      }
+
+      const prefJobType = c.preference?.jobType != null ? String(c.preference.jobType) : null;
+      if (prefJobType && jobTypeSet.has(prefJobType)) score += 5;
+
+      let reason: ScoredRow["reason"] = "category_match";
+      if (signals.includes("applied")) reason = "applied";
+      else if (signals.length >= 2) reason = "multi_match";
+      else if (signals.includes("skill")) reason = "skill_match";
+
+      const hintParts: string[] = [];
+      if (appliedJob) hintParts.push(`Đã ứng tuyển: ${appliedJob}`);
+      if (matchedSkills > 0) hintParts.push(`${matchedSkills} kỹ năng phù hợp`);
+      if (matchedCats > 0 && !appliedJob) hintParts.push("Ngành nghề phù hợp");
+      if (signals.includes("experience")) hintParts.push("Kinh nghiệm phù hợp");
+      if (signals.includes("location")) hintParts.push("Khu vực phù hợp");
+
+      return {
+        candidateId: c.id,
+        user: c.user,
+        province: c.province,
+        district: c.district,
+        score,
+        reason,
+        matchedSkillCount: matchedSkills,
+        matchedCategoryCount: matchedCats,
+        hint: hintParts.join(" · ") || "Có thể phù hợp",
+      };
+    });
+
+    // Sort by score desc
+    scored.sort((a, b) => b.score - a.score || b.matchedSkillCount - a.matchedSkillCount);
+
+    const total = scored.length;
+    const totalPages = Math.max(1, Math.ceil(total / limit));
+    const skip = (page - 1) * limit;
+    const items = scored.slice(skip, skip + limit).map(({ score: _s, ...rest }) => rest);
+
+    return {
+      items,
+      pagination: { total, page, limit, totalPages },
+      context: {
+        jobCount: jobContexts.length,
+        categoryIds: allCategoryIds,
+        skillCount: allSkillIds.length,
+      },
+    };
   },
 
   async getSuggestedCandidateCv(

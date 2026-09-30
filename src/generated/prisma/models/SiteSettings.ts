@@ -259,7 +259,7 @@ export type SiteSettingsGroupByOutputType = {
   _max: SiteSettingsMaxAggregateOutputType | null
 }
 
-type GetSiteSettingsGroupByPayload<T extends SiteSettingsGroupByArgs> = Prisma.PrismaPromise<
+export type GetSiteSettingsGroupByPayload<T extends SiteSettingsGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<SiteSettingsGroupByOutputType, T['by']> &
       {

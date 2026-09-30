@@ -59,7 +59,11 @@ export const buildSalaryFilter = (
 
     case SalaryRange.NEGOTIABLE:
       return {
-        OR: [{ minSalary: null }, { maxSalary: null }],
+        AND: [
+          {
+            OR: [{ minSalary: null }, { maxSalary: null }],
+          },
+        ],
       };
 
     default:

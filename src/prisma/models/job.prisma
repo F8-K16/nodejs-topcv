@@ -1,6 +1,7 @@
 model Job {
   id               Int                 @id @default(autoincrement())
   title            String
+  slug             String              @unique @db.VarChar(180)
   description      String              @db.Text
   minSalary        Int?
   maxSalary        Int?
@@ -21,9 +22,10 @@ model Job {
   viewCount        Int                 @default(0)
   applications     Application[]
   jobSkills        JobSkill[]
+  viewSources      JobViewSource[]
   category         Category            @relation(fields: [categoryId], references: [id])
   company          Company             @relation(fields: [companyId], references: [id])
-  employer         Employer?           @relation(fields: [employerId], references: [id])
+  employer         Employer?           @relation(fields: [employerId], references: [id], onDelete: SetNull)
   savedBy          SavedJob[]
 
   @@index([companyId])

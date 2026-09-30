@@ -45,6 +45,8 @@ export type UserMinAggregateOutputType = {
   deletedAt: Date | null
   isVerified: boolean | null
   isBlocked: boolean | null
+  totpSecret: string | null
+  totpEnabled: boolean | null
   receiveEmailNotifications: boolean | null
 }
 
@@ -59,6 +61,8 @@ export type UserMaxAggregateOutputType = {
   deletedAt: Date | null
   isVerified: boolean | null
   isBlocked: boolean | null
+  totpSecret: string | null
+  totpEnabled: boolean | null
   receiveEmailNotifications: boolean | null
 }
 
@@ -73,6 +77,8 @@ export type UserCountAggregateOutputType = {
   deletedAt: number
   isVerified: number
   isBlocked: number
+  totpSecret: number
+  totpEnabled: number
   receiveEmailNotifications: number
   _all: number
 }
@@ -97,6 +103,8 @@ export type UserMinAggregateInputType = {
   deletedAt?: true
   isVerified?: true
   isBlocked?: true
+  totpSecret?: true
+  totpEnabled?: true
   receiveEmailNotifications?: true
 }
 
@@ -111,6 +119,8 @@ export type UserMaxAggregateInputType = {
   deletedAt?: true
   isVerified?: true
   isBlocked?: true
+  totpSecret?: true
+  totpEnabled?: true
   receiveEmailNotifications?: true
 }
 
@@ -125,6 +135,8 @@ export type UserCountAggregateInputType = {
   deletedAt?: true
   isVerified?: true
   isBlocked?: true
+  totpSecret?: true
+  totpEnabled?: true
   receiveEmailNotifications?: true
   _all?: true
 }
@@ -226,6 +238,8 @@ export type UserGroupByOutputType = {
   deletedAt: Date | null
   isVerified: boolean
   isBlocked: boolean
+  totpSecret: string | null
+  totpEnabled: boolean
   receiveEmailNotifications: boolean
   _count: UserCountAggregateOutputType | null
   _avg: UserAvgAggregateOutputType | null
@@ -234,7 +248,7 @@ export type UserGroupByOutputType = {
   _max: UserMaxAggregateOutputType | null
 }
 
-type GetUserGroupByPayload<T extends UserGroupByArgs> = Prisma.PrismaPromise<
+export type GetUserGroupByPayload<T extends UserGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<UserGroupByOutputType, T['by']> &
       {
@@ -263,6 +277,8 @@ export type UserWhereInput = {
   deletedAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   isVerified?: Prisma.BoolFilter<"User"> | boolean
   isBlocked?: Prisma.BoolFilter<"User"> | boolean
+  totpSecret?: Prisma.StringNullableFilter<"User"> | string | null
+  totpEnabled?: Prisma.BoolFilter<"User"> | boolean
   receiveEmailNotifications?: Prisma.BoolFilter<"User"> | boolean
   candidate?: Prisma.XOR<Prisma.CandidateNullableScalarRelationFilter, Prisma.CandidateWhereInput> | null
   employer?: Prisma.XOR<Prisma.EmployerNullableScalarRelationFilter, Prisma.EmployerWhereInput> | null
@@ -272,6 +288,7 @@ export type UserWhereInput = {
   notifications?: Prisma.NotificationListRelationFilter
   cvs?: Prisma.CvListRelationFilter
   auditLogs?: Prisma.AuditLogListRelationFilter
+  blogPosts?: Prisma.BlogPostListRelationFilter
   chatEmployerConversations?: Prisma.ChatConversationListRelationFilter
   chatCandidateConversations?: Prisma.ChatConversationListRelationFilter
   chatMessagesSent?: Prisma.ChatMessageListRelationFilter
@@ -288,6 +305,8 @@ export type UserOrderByWithRelationInput = {
   deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   isVerified?: Prisma.SortOrder
   isBlocked?: Prisma.SortOrder
+  totpSecret?: Prisma.SortOrderInput | Prisma.SortOrder
+  totpEnabled?: Prisma.SortOrder
   receiveEmailNotifications?: Prisma.SortOrder
   candidate?: Prisma.CandidateOrderByWithRelationInput
   employer?: Prisma.EmployerOrderByWithRelationInput
@@ -297,6 +316,7 @@ export type UserOrderByWithRelationInput = {
   notifications?: Prisma.NotificationOrderByRelationAggregateInput
   cvs?: Prisma.CvOrderByRelationAggregateInput
   auditLogs?: Prisma.AuditLogOrderByRelationAggregateInput
+  blogPosts?: Prisma.BlogPostOrderByRelationAggregateInput
   chatEmployerConversations?: Prisma.ChatConversationOrderByRelationAggregateInput
   chatCandidateConversations?: Prisma.ChatConversationOrderByRelationAggregateInput
   chatMessagesSent?: Prisma.ChatMessageOrderByRelationAggregateInput
@@ -317,6 +337,8 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   deletedAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   isVerified?: Prisma.BoolFilter<"User"> | boolean
   isBlocked?: Prisma.BoolFilter<"User"> | boolean
+  totpSecret?: Prisma.StringNullableFilter<"User"> | string | null
+  totpEnabled?: Prisma.BoolFilter<"User"> | boolean
   receiveEmailNotifications?: Prisma.BoolFilter<"User"> | boolean
   candidate?: Prisma.XOR<Prisma.CandidateNullableScalarRelationFilter, Prisma.CandidateWhereInput> | null
   employer?: Prisma.XOR<Prisma.EmployerNullableScalarRelationFilter, Prisma.EmployerWhereInput> | null
@@ -326,6 +348,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   notifications?: Prisma.NotificationListRelationFilter
   cvs?: Prisma.CvListRelationFilter
   auditLogs?: Prisma.AuditLogListRelationFilter
+  blogPosts?: Prisma.BlogPostListRelationFilter
   chatEmployerConversations?: Prisma.ChatConversationListRelationFilter
   chatCandidateConversations?: Prisma.ChatConversationListRelationFilter
   chatMessagesSent?: Prisma.ChatMessageListRelationFilter
@@ -342,6 +365,8 @@ export type UserOrderByWithAggregationInput = {
   deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   isVerified?: Prisma.SortOrder
   isBlocked?: Prisma.SortOrder
+  totpSecret?: Prisma.SortOrderInput | Prisma.SortOrder
+  totpEnabled?: Prisma.SortOrder
   receiveEmailNotifications?: Prisma.SortOrder
   _count?: Prisma.UserCountOrderByAggregateInput
   _avg?: Prisma.UserAvgOrderByAggregateInput
@@ -364,6 +389,8 @@ export type UserScalarWhereWithAggregatesInput = {
   deletedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
   isVerified?: Prisma.BoolWithAggregatesFilter<"User"> | boolean
   isBlocked?: Prisma.BoolWithAggregatesFilter<"User"> | boolean
+  totpSecret?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
+  totpEnabled?: Prisma.BoolWithAggregatesFilter<"User"> | boolean
   receiveEmailNotifications?: Prisma.BoolWithAggregatesFilter<"User"> | boolean
 }
 
@@ -377,6 +404,8 @@ export type UserCreateInput = {
   deletedAt?: Date | string | null
   isVerified?: boolean
   isBlocked?: boolean
+  totpSecret?: string | null
+  totpEnabled?: boolean
   receiveEmailNotifications?: boolean
   candidate?: Prisma.CandidateCreateNestedOneWithoutUserInput
   employer?: Prisma.EmployerCreateNestedOneWithoutUserInput
@@ -386,6 +415,7 @@ export type UserCreateInput = {
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
   cvs?: Prisma.CvCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutActorUserInput
+  blogPosts?: Prisma.BlogPostCreateNestedManyWithoutAuthorInput
   chatEmployerConversations?: Prisma.ChatConversationCreateNestedManyWithoutEmployerUserInput
   chatCandidateConversations?: Prisma.ChatConversationCreateNestedManyWithoutCandidateUserInput
   chatMessagesSent?: Prisma.ChatMessageCreateNestedManyWithoutSenderInput
@@ -402,6 +432,8 @@ export type UserUncheckedCreateInput = {
   deletedAt?: Date | string | null
   isVerified?: boolean
   isBlocked?: boolean
+  totpSecret?: string | null
+  totpEnabled?: boolean
   receiveEmailNotifications?: boolean
   candidate?: Prisma.CandidateUncheckedCreateNestedOneWithoutUserInput
   employer?: Prisma.EmployerUncheckedCreateNestedOneWithoutUserInput
@@ -411,6 +443,7 @@ export type UserUncheckedCreateInput = {
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   cvs?: Prisma.CvUncheckedCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutActorUserInput
+  blogPosts?: Prisma.BlogPostUncheckedCreateNestedManyWithoutAuthorInput
   chatEmployerConversations?: Prisma.ChatConversationUncheckedCreateNestedManyWithoutEmployerUserInput
   chatCandidateConversations?: Prisma.ChatConversationUncheckedCreateNestedManyWithoutCandidateUserInput
   chatMessagesSent?: Prisma.ChatMessageUncheckedCreateNestedManyWithoutSenderInput
@@ -426,6 +459,8 @@ export type UserUpdateInput = {
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isBlocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  totpSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totpEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   receiveEmailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
   candidate?: Prisma.CandidateUpdateOneWithoutUserNestedInput
   employer?: Prisma.EmployerUpdateOneWithoutUserNestedInput
@@ -435,6 +470,7 @@ export type UserUpdateInput = {
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   cvs?: Prisma.CvUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutActorUserNestedInput
+  blogPosts?: Prisma.BlogPostUpdateManyWithoutAuthorNestedInput
   chatEmployerConversations?: Prisma.ChatConversationUpdateManyWithoutEmployerUserNestedInput
   chatCandidateConversations?: Prisma.ChatConversationUpdateManyWithoutCandidateUserNestedInput
   chatMessagesSent?: Prisma.ChatMessageUpdateManyWithoutSenderNestedInput
@@ -451,6 +487,8 @@ export type UserUncheckedUpdateInput = {
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isBlocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  totpSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totpEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   receiveEmailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
   candidate?: Prisma.CandidateUncheckedUpdateOneWithoutUserNestedInput
   employer?: Prisma.EmployerUncheckedUpdateOneWithoutUserNestedInput
@@ -460,6 +498,7 @@ export type UserUncheckedUpdateInput = {
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   cvs?: Prisma.CvUncheckedUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutActorUserNestedInput
+  blogPosts?: Prisma.BlogPostUncheckedUpdateManyWithoutAuthorNestedInput
   chatEmployerConversations?: Prisma.ChatConversationUncheckedUpdateManyWithoutEmployerUserNestedInput
   chatCandidateConversations?: Prisma.ChatConversationUncheckedUpdateManyWithoutCandidateUserNestedInput
   chatMessagesSent?: Prisma.ChatMessageUncheckedUpdateManyWithoutSenderNestedInput
@@ -476,6 +515,8 @@ export type UserCreateManyInput = {
   deletedAt?: Date | string | null
   isVerified?: boolean
   isBlocked?: boolean
+  totpSecret?: string | null
+  totpEnabled?: boolean
   receiveEmailNotifications?: boolean
 }
 
@@ -489,6 +530,8 @@ export type UserUpdateManyMutationInput = {
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isBlocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  totpSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totpEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   receiveEmailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
@@ -503,12 +546,19 @@ export type UserUncheckedUpdateManyInput = {
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isBlocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  totpSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totpEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   receiveEmailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 export type UserScalarRelationFilter = {
   is?: Prisma.UserWhereInput
   isNot?: Prisma.UserWhereInput
+}
+
+export type UserNullableScalarRelationFilter = {
+  is?: Prisma.UserWhereInput | null
+  isNot?: Prisma.UserWhereInput | null
 }
 
 export type UserOrderByRelevanceInput = {
@@ -528,6 +578,8 @@ export type UserCountOrderByAggregateInput = {
   deletedAt?: Prisma.SortOrder
   isVerified?: Prisma.SortOrder
   isBlocked?: Prisma.SortOrder
+  totpSecret?: Prisma.SortOrder
+  totpEnabled?: Prisma.SortOrder
   receiveEmailNotifications?: Prisma.SortOrder
 }
 
@@ -546,6 +598,8 @@ export type UserMaxOrderByAggregateInput = {
   deletedAt?: Prisma.SortOrder
   isVerified?: Prisma.SortOrder
   isBlocked?: Prisma.SortOrder
+  totpSecret?: Prisma.SortOrder
+  totpEnabled?: Prisma.SortOrder
   receiveEmailNotifications?: Prisma.SortOrder
 }
 
@@ -560,6 +614,8 @@ export type UserMinOrderByAggregateInput = {
   deletedAt?: Prisma.SortOrder
   isVerified?: Prisma.SortOrder
   isBlocked?: Prisma.SortOrder
+  totpSecret?: Prisma.SortOrder
+  totpEnabled?: Prisma.SortOrder
   receiveEmailNotifications?: Prisma.SortOrder
 }
 
@@ -579,6 +635,22 @@ export type UserUpdateOneRequiredWithoutAuditLogsNestedInput = {
   upsert?: Prisma.UserUpsertWithoutAuditLogsInput
   connect?: Prisma.UserWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutAuditLogsInput, Prisma.UserUpdateWithoutAuditLogsInput>, Prisma.UserUncheckedUpdateWithoutAuditLogsInput>
+}
+
+export type UserCreateNestedOneWithoutBlogPostsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutBlogPostsInput, Prisma.UserUncheckedCreateWithoutBlogPostsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutBlogPostsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneWithoutBlogPostsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutBlogPostsInput, Prisma.UserUncheckedCreateWithoutBlogPostsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutBlogPostsInput
+  upsert?: Prisma.UserUpsertWithoutBlogPostsInput
+  disconnect?: Prisma.UserWhereInput | boolean
+  delete?: Prisma.UserWhereInput | boolean
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutBlogPostsInput, Prisma.UserUpdateWithoutBlogPostsInput>, Prisma.UserUncheckedUpdateWithoutBlogPostsInput>
 }
 
 export type UserCreateNestedOneWithoutCandidateInput = {
@@ -731,6 +803,8 @@ export type UserCreateWithoutAuditLogsInput = {
   deletedAt?: Date | string | null
   isVerified?: boolean
   isBlocked?: boolean
+  totpSecret?: string | null
+  totpEnabled?: boolean
   receiveEmailNotifications?: boolean
   candidate?: Prisma.CandidateCreateNestedOneWithoutUserInput
   employer?: Prisma.EmployerCreateNestedOneWithoutUserInput
@@ -739,6 +813,7 @@ export type UserCreateWithoutAuditLogsInput = {
   userRoles?: Prisma.UserRoleCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
   cvs?: Prisma.CvCreateNestedManyWithoutUserInput
+  blogPosts?: Prisma.BlogPostCreateNestedManyWithoutAuthorInput
   chatEmployerConversations?: Prisma.ChatConversationCreateNestedManyWithoutEmployerUserInput
   chatCandidateConversations?: Prisma.ChatConversationCreateNestedManyWithoutCandidateUserInput
   chatMessagesSent?: Prisma.ChatMessageCreateNestedManyWithoutSenderInput
@@ -755,6 +830,8 @@ export type UserUncheckedCreateWithoutAuditLogsInput = {
   deletedAt?: Date | string | null
   isVerified?: boolean
   isBlocked?: boolean
+  totpSecret?: string | null
+  totpEnabled?: boolean
   receiveEmailNotifications?: boolean
   candidate?: Prisma.CandidateUncheckedCreateNestedOneWithoutUserInput
   employer?: Prisma.EmployerUncheckedCreateNestedOneWithoutUserInput
@@ -763,6 +840,7 @@ export type UserUncheckedCreateWithoutAuditLogsInput = {
   userRoles?: Prisma.UserRoleUncheckedCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   cvs?: Prisma.CvUncheckedCreateNestedManyWithoutUserInput
+  blogPosts?: Prisma.BlogPostUncheckedCreateNestedManyWithoutAuthorInput
   chatEmployerConversations?: Prisma.ChatConversationUncheckedCreateNestedManyWithoutEmployerUserInput
   chatCandidateConversations?: Prisma.ChatConversationUncheckedCreateNestedManyWithoutCandidateUserInput
   chatMessagesSent?: Prisma.ChatMessageUncheckedCreateNestedManyWithoutSenderInput
@@ -794,6 +872,8 @@ export type UserUpdateWithoutAuditLogsInput = {
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isBlocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  totpSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totpEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   receiveEmailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
   candidate?: Prisma.CandidateUpdateOneWithoutUserNestedInput
   employer?: Prisma.EmployerUpdateOneWithoutUserNestedInput
@@ -802,6 +882,7 @@ export type UserUpdateWithoutAuditLogsInput = {
   userRoles?: Prisma.UserRoleUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   cvs?: Prisma.CvUpdateManyWithoutUserNestedInput
+  blogPosts?: Prisma.BlogPostUpdateManyWithoutAuthorNestedInput
   chatEmployerConversations?: Prisma.ChatConversationUpdateManyWithoutEmployerUserNestedInput
   chatCandidateConversations?: Prisma.ChatConversationUpdateManyWithoutCandidateUserNestedInput
   chatMessagesSent?: Prisma.ChatMessageUpdateManyWithoutSenderNestedInput
@@ -818,6 +899,8 @@ export type UserUncheckedUpdateWithoutAuditLogsInput = {
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isBlocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  totpSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totpEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   receiveEmailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
   candidate?: Prisma.CandidateUncheckedUpdateOneWithoutUserNestedInput
   employer?: Prisma.EmployerUncheckedUpdateOneWithoutUserNestedInput
@@ -826,6 +909,129 @@ export type UserUncheckedUpdateWithoutAuditLogsInput = {
   userRoles?: Prisma.UserRoleUncheckedUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   cvs?: Prisma.CvUncheckedUpdateManyWithoutUserNestedInput
+  blogPosts?: Prisma.BlogPostUncheckedUpdateManyWithoutAuthorNestedInput
+  chatEmployerConversations?: Prisma.ChatConversationUncheckedUpdateManyWithoutEmployerUserNestedInput
+  chatCandidateConversations?: Prisma.ChatConversationUncheckedUpdateManyWithoutCandidateUserNestedInput
+  chatMessagesSent?: Prisma.ChatMessageUncheckedUpdateManyWithoutSenderNestedInput
+}
+
+export type UserCreateWithoutBlogPostsInput = {
+  email: string
+  username: string
+  password: string
+  avatar?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  isVerified?: boolean
+  isBlocked?: boolean
+  totpSecret?: string | null
+  totpEnabled?: boolean
+  receiveEmailNotifications?: boolean
+  candidate?: Prisma.CandidateCreateNestedOneWithoutUserInput
+  employer?: Prisma.EmployerCreateNestedOneWithoutUserInput
+  userPhone?: Prisma.UserPhoneCreateNestedOneWithoutUserInput
+  userPermissions?: Prisma.UserPermissionCreateNestedManyWithoutUserInput
+  userRoles?: Prisma.UserRoleCreateNestedManyWithoutUserInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  cvs?: Prisma.CvCreateNestedManyWithoutUserInput
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutActorUserInput
+  chatEmployerConversations?: Prisma.ChatConversationCreateNestedManyWithoutEmployerUserInput
+  chatCandidateConversations?: Prisma.ChatConversationCreateNestedManyWithoutCandidateUserInput
+  chatMessagesSent?: Prisma.ChatMessageCreateNestedManyWithoutSenderInput
+}
+
+export type UserUncheckedCreateWithoutBlogPostsInput = {
+  id?: number
+  email: string
+  username: string
+  password: string
+  avatar?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  isVerified?: boolean
+  isBlocked?: boolean
+  totpSecret?: string | null
+  totpEnabled?: boolean
+  receiveEmailNotifications?: boolean
+  candidate?: Prisma.CandidateUncheckedCreateNestedOneWithoutUserInput
+  employer?: Prisma.EmployerUncheckedCreateNestedOneWithoutUserInput
+  userPhone?: Prisma.UserPhoneUncheckedCreateNestedOneWithoutUserInput
+  userPermissions?: Prisma.UserPermissionUncheckedCreateNestedManyWithoutUserInput
+  userRoles?: Prisma.UserRoleUncheckedCreateNestedManyWithoutUserInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  cvs?: Prisma.CvUncheckedCreateNestedManyWithoutUserInput
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutActorUserInput
+  chatEmployerConversations?: Prisma.ChatConversationUncheckedCreateNestedManyWithoutEmployerUserInput
+  chatCandidateConversations?: Prisma.ChatConversationUncheckedCreateNestedManyWithoutCandidateUserInput
+  chatMessagesSent?: Prisma.ChatMessageUncheckedCreateNestedManyWithoutSenderInput
+}
+
+export type UserCreateOrConnectWithoutBlogPostsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutBlogPostsInput, Prisma.UserUncheckedCreateWithoutBlogPostsInput>
+}
+
+export type UserUpsertWithoutBlogPostsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutBlogPostsInput, Prisma.UserUncheckedUpdateWithoutBlogPostsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutBlogPostsInput, Prisma.UserUncheckedCreateWithoutBlogPostsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutBlogPostsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutBlogPostsInput, Prisma.UserUncheckedUpdateWithoutBlogPostsInput>
+}
+
+export type UserUpdateWithoutBlogPostsInput = {
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  username?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isBlocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  totpSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totpEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  receiveEmailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  candidate?: Prisma.CandidateUpdateOneWithoutUserNestedInput
+  employer?: Prisma.EmployerUpdateOneWithoutUserNestedInput
+  userPhone?: Prisma.UserPhoneUpdateOneWithoutUserNestedInput
+  userPermissions?: Prisma.UserPermissionUpdateManyWithoutUserNestedInput
+  userRoles?: Prisma.UserRoleUpdateManyWithoutUserNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  cvs?: Prisma.CvUpdateManyWithoutUserNestedInput
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutActorUserNestedInput
+  chatEmployerConversations?: Prisma.ChatConversationUpdateManyWithoutEmployerUserNestedInput
+  chatCandidateConversations?: Prisma.ChatConversationUpdateManyWithoutCandidateUserNestedInput
+  chatMessagesSent?: Prisma.ChatMessageUpdateManyWithoutSenderNestedInput
+}
+
+export type UserUncheckedUpdateWithoutBlogPostsInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  username?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isBlocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  totpSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totpEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  receiveEmailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  candidate?: Prisma.CandidateUncheckedUpdateOneWithoutUserNestedInput
+  employer?: Prisma.EmployerUncheckedUpdateOneWithoutUserNestedInput
+  userPhone?: Prisma.UserPhoneUncheckedUpdateOneWithoutUserNestedInput
+  userPermissions?: Prisma.UserPermissionUncheckedUpdateManyWithoutUserNestedInput
+  userRoles?: Prisma.UserRoleUncheckedUpdateManyWithoutUserNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  cvs?: Prisma.CvUncheckedUpdateManyWithoutUserNestedInput
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutActorUserNestedInput
   chatEmployerConversations?: Prisma.ChatConversationUncheckedUpdateManyWithoutEmployerUserNestedInput
   chatCandidateConversations?: Prisma.ChatConversationUncheckedUpdateManyWithoutCandidateUserNestedInput
   chatMessagesSent?: Prisma.ChatMessageUncheckedUpdateManyWithoutSenderNestedInput
@@ -841,6 +1047,8 @@ export type UserCreateWithoutCandidateInput = {
   deletedAt?: Date | string | null
   isVerified?: boolean
   isBlocked?: boolean
+  totpSecret?: string | null
+  totpEnabled?: boolean
   receiveEmailNotifications?: boolean
   employer?: Prisma.EmployerCreateNestedOneWithoutUserInput
   userPhone?: Prisma.UserPhoneCreateNestedOneWithoutUserInput
@@ -849,6 +1057,7 @@ export type UserCreateWithoutCandidateInput = {
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
   cvs?: Prisma.CvCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutActorUserInput
+  blogPosts?: Prisma.BlogPostCreateNestedManyWithoutAuthorInput
   chatEmployerConversations?: Prisma.ChatConversationCreateNestedManyWithoutEmployerUserInput
   chatCandidateConversations?: Prisma.ChatConversationCreateNestedManyWithoutCandidateUserInput
   chatMessagesSent?: Prisma.ChatMessageCreateNestedManyWithoutSenderInput
@@ -865,6 +1074,8 @@ export type UserUncheckedCreateWithoutCandidateInput = {
   deletedAt?: Date | string | null
   isVerified?: boolean
   isBlocked?: boolean
+  totpSecret?: string | null
+  totpEnabled?: boolean
   receiveEmailNotifications?: boolean
   employer?: Prisma.EmployerUncheckedCreateNestedOneWithoutUserInput
   userPhone?: Prisma.UserPhoneUncheckedCreateNestedOneWithoutUserInput
@@ -873,6 +1084,7 @@ export type UserUncheckedCreateWithoutCandidateInput = {
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   cvs?: Prisma.CvUncheckedCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutActorUserInput
+  blogPosts?: Prisma.BlogPostUncheckedCreateNestedManyWithoutAuthorInput
   chatEmployerConversations?: Prisma.ChatConversationUncheckedCreateNestedManyWithoutEmployerUserInput
   chatCandidateConversations?: Prisma.ChatConversationUncheckedCreateNestedManyWithoutCandidateUserInput
   chatMessagesSent?: Prisma.ChatMessageUncheckedCreateNestedManyWithoutSenderInput
@@ -904,6 +1116,8 @@ export type UserUpdateWithoutCandidateInput = {
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isBlocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  totpSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totpEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   receiveEmailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
   employer?: Prisma.EmployerUpdateOneWithoutUserNestedInput
   userPhone?: Prisma.UserPhoneUpdateOneWithoutUserNestedInput
@@ -912,6 +1126,7 @@ export type UserUpdateWithoutCandidateInput = {
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   cvs?: Prisma.CvUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutActorUserNestedInput
+  blogPosts?: Prisma.BlogPostUpdateManyWithoutAuthorNestedInput
   chatEmployerConversations?: Prisma.ChatConversationUpdateManyWithoutEmployerUserNestedInput
   chatCandidateConversations?: Prisma.ChatConversationUpdateManyWithoutCandidateUserNestedInput
   chatMessagesSent?: Prisma.ChatMessageUpdateManyWithoutSenderNestedInput
@@ -928,6 +1143,8 @@ export type UserUncheckedUpdateWithoutCandidateInput = {
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isBlocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  totpSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totpEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   receiveEmailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
   employer?: Prisma.EmployerUncheckedUpdateOneWithoutUserNestedInput
   userPhone?: Prisma.UserPhoneUncheckedUpdateOneWithoutUserNestedInput
@@ -936,6 +1153,7 @@ export type UserUncheckedUpdateWithoutCandidateInput = {
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   cvs?: Prisma.CvUncheckedUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutActorUserNestedInput
+  blogPosts?: Prisma.BlogPostUncheckedUpdateManyWithoutAuthorNestedInput
   chatEmployerConversations?: Prisma.ChatConversationUncheckedUpdateManyWithoutEmployerUserNestedInput
   chatCandidateConversations?: Prisma.ChatConversationUncheckedUpdateManyWithoutCandidateUserNestedInput
   chatMessagesSent?: Prisma.ChatMessageUncheckedUpdateManyWithoutSenderNestedInput
@@ -951,6 +1169,8 @@ export type UserCreateWithoutChatCandidateConversationsInput = {
   deletedAt?: Date | string | null
   isVerified?: boolean
   isBlocked?: boolean
+  totpSecret?: string | null
+  totpEnabled?: boolean
   receiveEmailNotifications?: boolean
   candidate?: Prisma.CandidateCreateNestedOneWithoutUserInput
   employer?: Prisma.EmployerCreateNestedOneWithoutUserInput
@@ -960,6 +1180,7 @@ export type UserCreateWithoutChatCandidateConversationsInput = {
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
   cvs?: Prisma.CvCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutActorUserInput
+  blogPosts?: Prisma.BlogPostCreateNestedManyWithoutAuthorInput
   chatEmployerConversations?: Prisma.ChatConversationCreateNestedManyWithoutEmployerUserInput
   chatMessagesSent?: Prisma.ChatMessageCreateNestedManyWithoutSenderInput
 }
@@ -975,6 +1196,8 @@ export type UserUncheckedCreateWithoutChatCandidateConversationsInput = {
   deletedAt?: Date | string | null
   isVerified?: boolean
   isBlocked?: boolean
+  totpSecret?: string | null
+  totpEnabled?: boolean
   receiveEmailNotifications?: boolean
   candidate?: Prisma.CandidateUncheckedCreateNestedOneWithoutUserInput
   employer?: Prisma.EmployerUncheckedCreateNestedOneWithoutUserInput
@@ -984,6 +1207,7 @@ export type UserUncheckedCreateWithoutChatCandidateConversationsInput = {
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   cvs?: Prisma.CvUncheckedCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutActorUserInput
+  blogPosts?: Prisma.BlogPostUncheckedCreateNestedManyWithoutAuthorInput
   chatEmployerConversations?: Prisma.ChatConversationUncheckedCreateNestedManyWithoutEmployerUserInput
   chatMessagesSent?: Prisma.ChatMessageUncheckedCreateNestedManyWithoutSenderInput
 }
@@ -1003,6 +1227,8 @@ export type UserCreateWithoutChatEmployerConversationsInput = {
   deletedAt?: Date | string | null
   isVerified?: boolean
   isBlocked?: boolean
+  totpSecret?: string | null
+  totpEnabled?: boolean
   receiveEmailNotifications?: boolean
   candidate?: Prisma.CandidateCreateNestedOneWithoutUserInput
   employer?: Prisma.EmployerCreateNestedOneWithoutUserInput
@@ -1012,6 +1238,7 @@ export type UserCreateWithoutChatEmployerConversationsInput = {
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
   cvs?: Prisma.CvCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutActorUserInput
+  blogPosts?: Prisma.BlogPostCreateNestedManyWithoutAuthorInput
   chatCandidateConversations?: Prisma.ChatConversationCreateNestedManyWithoutCandidateUserInput
   chatMessagesSent?: Prisma.ChatMessageCreateNestedManyWithoutSenderInput
 }
@@ -1027,6 +1254,8 @@ export type UserUncheckedCreateWithoutChatEmployerConversationsInput = {
   deletedAt?: Date | string | null
   isVerified?: boolean
   isBlocked?: boolean
+  totpSecret?: string | null
+  totpEnabled?: boolean
   receiveEmailNotifications?: boolean
   candidate?: Prisma.CandidateUncheckedCreateNestedOneWithoutUserInput
   employer?: Prisma.EmployerUncheckedCreateNestedOneWithoutUserInput
@@ -1036,6 +1265,7 @@ export type UserUncheckedCreateWithoutChatEmployerConversationsInput = {
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   cvs?: Prisma.CvUncheckedCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutActorUserInput
+  blogPosts?: Prisma.BlogPostUncheckedCreateNestedManyWithoutAuthorInput
   chatCandidateConversations?: Prisma.ChatConversationUncheckedCreateNestedManyWithoutCandidateUserInput
   chatMessagesSent?: Prisma.ChatMessageUncheckedCreateNestedManyWithoutSenderInput
 }
@@ -1066,6 +1296,8 @@ export type UserUpdateWithoutChatCandidateConversationsInput = {
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isBlocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  totpSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totpEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   receiveEmailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
   candidate?: Prisma.CandidateUpdateOneWithoutUserNestedInput
   employer?: Prisma.EmployerUpdateOneWithoutUserNestedInput
@@ -1075,6 +1307,7 @@ export type UserUpdateWithoutChatCandidateConversationsInput = {
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   cvs?: Prisma.CvUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutActorUserNestedInput
+  blogPosts?: Prisma.BlogPostUpdateManyWithoutAuthorNestedInput
   chatEmployerConversations?: Prisma.ChatConversationUpdateManyWithoutEmployerUserNestedInput
   chatMessagesSent?: Prisma.ChatMessageUpdateManyWithoutSenderNestedInput
 }
@@ -1090,6 +1323,8 @@ export type UserUncheckedUpdateWithoutChatCandidateConversationsInput = {
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isBlocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  totpSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totpEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   receiveEmailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
   candidate?: Prisma.CandidateUncheckedUpdateOneWithoutUserNestedInput
   employer?: Prisma.EmployerUncheckedUpdateOneWithoutUserNestedInput
@@ -1099,6 +1334,7 @@ export type UserUncheckedUpdateWithoutChatCandidateConversationsInput = {
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   cvs?: Prisma.CvUncheckedUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutActorUserNestedInput
+  blogPosts?: Prisma.BlogPostUncheckedUpdateManyWithoutAuthorNestedInput
   chatEmployerConversations?: Prisma.ChatConversationUncheckedUpdateManyWithoutEmployerUserNestedInput
   chatMessagesSent?: Prisma.ChatMessageUncheckedUpdateManyWithoutSenderNestedInput
 }
@@ -1124,6 +1360,8 @@ export type UserUpdateWithoutChatEmployerConversationsInput = {
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isBlocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  totpSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totpEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   receiveEmailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
   candidate?: Prisma.CandidateUpdateOneWithoutUserNestedInput
   employer?: Prisma.EmployerUpdateOneWithoutUserNestedInput
@@ -1133,6 +1371,7 @@ export type UserUpdateWithoutChatEmployerConversationsInput = {
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   cvs?: Prisma.CvUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutActorUserNestedInput
+  blogPosts?: Prisma.BlogPostUpdateManyWithoutAuthorNestedInput
   chatCandidateConversations?: Prisma.ChatConversationUpdateManyWithoutCandidateUserNestedInput
   chatMessagesSent?: Prisma.ChatMessageUpdateManyWithoutSenderNestedInput
 }
@@ -1148,6 +1387,8 @@ export type UserUncheckedUpdateWithoutChatEmployerConversationsInput = {
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isBlocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  totpSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totpEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   receiveEmailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
   candidate?: Prisma.CandidateUncheckedUpdateOneWithoutUserNestedInput
   employer?: Prisma.EmployerUncheckedUpdateOneWithoutUserNestedInput
@@ -1157,6 +1398,7 @@ export type UserUncheckedUpdateWithoutChatEmployerConversationsInput = {
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   cvs?: Prisma.CvUncheckedUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutActorUserNestedInput
+  blogPosts?: Prisma.BlogPostUncheckedUpdateManyWithoutAuthorNestedInput
   chatCandidateConversations?: Prisma.ChatConversationUncheckedUpdateManyWithoutCandidateUserNestedInput
   chatMessagesSent?: Prisma.ChatMessageUncheckedUpdateManyWithoutSenderNestedInput
 }
@@ -1171,6 +1413,8 @@ export type UserCreateWithoutChatMessagesSentInput = {
   deletedAt?: Date | string | null
   isVerified?: boolean
   isBlocked?: boolean
+  totpSecret?: string | null
+  totpEnabled?: boolean
   receiveEmailNotifications?: boolean
   candidate?: Prisma.CandidateCreateNestedOneWithoutUserInput
   employer?: Prisma.EmployerCreateNestedOneWithoutUserInput
@@ -1180,6 +1424,7 @@ export type UserCreateWithoutChatMessagesSentInput = {
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
   cvs?: Prisma.CvCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutActorUserInput
+  blogPosts?: Prisma.BlogPostCreateNestedManyWithoutAuthorInput
   chatEmployerConversations?: Prisma.ChatConversationCreateNestedManyWithoutEmployerUserInput
   chatCandidateConversations?: Prisma.ChatConversationCreateNestedManyWithoutCandidateUserInput
 }
@@ -1195,6 +1440,8 @@ export type UserUncheckedCreateWithoutChatMessagesSentInput = {
   deletedAt?: Date | string | null
   isVerified?: boolean
   isBlocked?: boolean
+  totpSecret?: string | null
+  totpEnabled?: boolean
   receiveEmailNotifications?: boolean
   candidate?: Prisma.CandidateUncheckedCreateNestedOneWithoutUserInput
   employer?: Prisma.EmployerUncheckedCreateNestedOneWithoutUserInput
@@ -1204,6 +1451,7 @@ export type UserUncheckedCreateWithoutChatMessagesSentInput = {
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   cvs?: Prisma.CvUncheckedCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutActorUserInput
+  blogPosts?: Prisma.BlogPostUncheckedCreateNestedManyWithoutAuthorInput
   chatEmployerConversations?: Prisma.ChatConversationUncheckedCreateNestedManyWithoutEmployerUserInput
   chatCandidateConversations?: Prisma.ChatConversationUncheckedCreateNestedManyWithoutCandidateUserInput
 }
@@ -1234,6 +1482,8 @@ export type UserUpdateWithoutChatMessagesSentInput = {
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isBlocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  totpSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totpEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   receiveEmailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
   candidate?: Prisma.CandidateUpdateOneWithoutUserNestedInput
   employer?: Prisma.EmployerUpdateOneWithoutUserNestedInput
@@ -1243,6 +1493,7 @@ export type UserUpdateWithoutChatMessagesSentInput = {
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   cvs?: Prisma.CvUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutActorUserNestedInput
+  blogPosts?: Prisma.BlogPostUpdateManyWithoutAuthorNestedInput
   chatEmployerConversations?: Prisma.ChatConversationUpdateManyWithoutEmployerUserNestedInput
   chatCandidateConversations?: Prisma.ChatConversationUpdateManyWithoutCandidateUserNestedInput
 }
@@ -1258,6 +1509,8 @@ export type UserUncheckedUpdateWithoutChatMessagesSentInput = {
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isBlocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  totpSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totpEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   receiveEmailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
   candidate?: Prisma.CandidateUncheckedUpdateOneWithoutUserNestedInput
   employer?: Prisma.EmployerUncheckedUpdateOneWithoutUserNestedInput
@@ -1267,6 +1520,7 @@ export type UserUncheckedUpdateWithoutChatMessagesSentInput = {
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   cvs?: Prisma.CvUncheckedUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutActorUserNestedInput
+  blogPosts?: Prisma.BlogPostUncheckedUpdateManyWithoutAuthorNestedInput
   chatEmployerConversations?: Prisma.ChatConversationUncheckedUpdateManyWithoutEmployerUserNestedInput
   chatCandidateConversations?: Prisma.ChatConversationUncheckedUpdateManyWithoutCandidateUserNestedInput
 }
@@ -1281,6 +1535,8 @@ export type UserCreateWithoutCvsInput = {
   deletedAt?: Date | string | null
   isVerified?: boolean
   isBlocked?: boolean
+  totpSecret?: string | null
+  totpEnabled?: boolean
   receiveEmailNotifications?: boolean
   candidate?: Prisma.CandidateCreateNestedOneWithoutUserInput
   employer?: Prisma.EmployerCreateNestedOneWithoutUserInput
@@ -1289,6 +1545,7 @@ export type UserCreateWithoutCvsInput = {
   userRoles?: Prisma.UserRoleCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutActorUserInput
+  blogPosts?: Prisma.BlogPostCreateNestedManyWithoutAuthorInput
   chatEmployerConversations?: Prisma.ChatConversationCreateNestedManyWithoutEmployerUserInput
   chatCandidateConversations?: Prisma.ChatConversationCreateNestedManyWithoutCandidateUserInput
   chatMessagesSent?: Prisma.ChatMessageCreateNestedManyWithoutSenderInput
@@ -1305,6 +1562,8 @@ export type UserUncheckedCreateWithoutCvsInput = {
   deletedAt?: Date | string | null
   isVerified?: boolean
   isBlocked?: boolean
+  totpSecret?: string | null
+  totpEnabled?: boolean
   receiveEmailNotifications?: boolean
   candidate?: Prisma.CandidateUncheckedCreateNestedOneWithoutUserInput
   employer?: Prisma.EmployerUncheckedCreateNestedOneWithoutUserInput
@@ -1313,6 +1572,7 @@ export type UserUncheckedCreateWithoutCvsInput = {
   userRoles?: Prisma.UserRoleUncheckedCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutActorUserInput
+  blogPosts?: Prisma.BlogPostUncheckedCreateNestedManyWithoutAuthorInput
   chatEmployerConversations?: Prisma.ChatConversationUncheckedCreateNestedManyWithoutEmployerUserInput
   chatCandidateConversations?: Prisma.ChatConversationUncheckedCreateNestedManyWithoutCandidateUserInput
   chatMessagesSent?: Prisma.ChatMessageUncheckedCreateNestedManyWithoutSenderInput
@@ -1344,6 +1604,8 @@ export type UserUpdateWithoutCvsInput = {
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isBlocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  totpSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totpEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   receiveEmailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
   candidate?: Prisma.CandidateUpdateOneWithoutUserNestedInput
   employer?: Prisma.EmployerUpdateOneWithoutUserNestedInput
@@ -1352,6 +1614,7 @@ export type UserUpdateWithoutCvsInput = {
   userRoles?: Prisma.UserRoleUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutActorUserNestedInput
+  blogPosts?: Prisma.BlogPostUpdateManyWithoutAuthorNestedInput
   chatEmployerConversations?: Prisma.ChatConversationUpdateManyWithoutEmployerUserNestedInput
   chatCandidateConversations?: Prisma.ChatConversationUpdateManyWithoutCandidateUserNestedInput
   chatMessagesSent?: Prisma.ChatMessageUpdateManyWithoutSenderNestedInput
@@ -1368,6 +1631,8 @@ export type UserUncheckedUpdateWithoutCvsInput = {
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isBlocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  totpSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totpEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   receiveEmailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
   candidate?: Prisma.CandidateUncheckedUpdateOneWithoutUserNestedInput
   employer?: Prisma.EmployerUncheckedUpdateOneWithoutUserNestedInput
@@ -1376,6 +1641,7 @@ export type UserUncheckedUpdateWithoutCvsInput = {
   userRoles?: Prisma.UserRoleUncheckedUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutActorUserNestedInput
+  blogPosts?: Prisma.BlogPostUncheckedUpdateManyWithoutAuthorNestedInput
   chatEmployerConversations?: Prisma.ChatConversationUncheckedUpdateManyWithoutEmployerUserNestedInput
   chatCandidateConversations?: Prisma.ChatConversationUncheckedUpdateManyWithoutCandidateUserNestedInput
   chatMessagesSent?: Prisma.ChatMessageUncheckedUpdateManyWithoutSenderNestedInput
@@ -1391,6 +1657,8 @@ export type UserCreateWithoutEmployerInput = {
   deletedAt?: Date | string | null
   isVerified?: boolean
   isBlocked?: boolean
+  totpSecret?: string | null
+  totpEnabled?: boolean
   receiveEmailNotifications?: boolean
   candidate?: Prisma.CandidateCreateNestedOneWithoutUserInput
   userPhone?: Prisma.UserPhoneCreateNestedOneWithoutUserInput
@@ -1399,6 +1667,7 @@ export type UserCreateWithoutEmployerInput = {
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
   cvs?: Prisma.CvCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutActorUserInput
+  blogPosts?: Prisma.BlogPostCreateNestedManyWithoutAuthorInput
   chatEmployerConversations?: Prisma.ChatConversationCreateNestedManyWithoutEmployerUserInput
   chatCandidateConversations?: Prisma.ChatConversationCreateNestedManyWithoutCandidateUserInput
   chatMessagesSent?: Prisma.ChatMessageCreateNestedManyWithoutSenderInput
@@ -1415,6 +1684,8 @@ export type UserUncheckedCreateWithoutEmployerInput = {
   deletedAt?: Date | string | null
   isVerified?: boolean
   isBlocked?: boolean
+  totpSecret?: string | null
+  totpEnabled?: boolean
   receiveEmailNotifications?: boolean
   candidate?: Prisma.CandidateUncheckedCreateNestedOneWithoutUserInput
   userPhone?: Prisma.UserPhoneUncheckedCreateNestedOneWithoutUserInput
@@ -1423,6 +1694,7 @@ export type UserUncheckedCreateWithoutEmployerInput = {
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   cvs?: Prisma.CvUncheckedCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutActorUserInput
+  blogPosts?: Prisma.BlogPostUncheckedCreateNestedManyWithoutAuthorInput
   chatEmployerConversations?: Prisma.ChatConversationUncheckedCreateNestedManyWithoutEmployerUserInput
   chatCandidateConversations?: Prisma.ChatConversationUncheckedCreateNestedManyWithoutCandidateUserInput
   chatMessagesSent?: Prisma.ChatMessageUncheckedCreateNestedManyWithoutSenderInput
@@ -1454,6 +1726,8 @@ export type UserUpdateWithoutEmployerInput = {
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isBlocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  totpSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totpEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   receiveEmailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
   candidate?: Prisma.CandidateUpdateOneWithoutUserNestedInput
   userPhone?: Prisma.UserPhoneUpdateOneWithoutUserNestedInput
@@ -1462,6 +1736,7 @@ export type UserUpdateWithoutEmployerInput = {
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   cvs?: Prisma.CvUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutActorUserNestedInput
+  blogPosts?: Prisma.BlogPostUpdateManyWithoutAuthorNestedInput
   chatEmployerConversations?: Prisma.ChatConversationUpdateManyWithoutEmployerUserNestedInput
   chatCandidateConversations?: Prisma.ChatConversationUpdateManyWithoutCandidateUserNestedInput
   chatMessagesSent?: Prisma.ChatMessageUpdateManyWithoutSenderNestedInput
@@ -1478,6 +1753,8 @@ export type UserUncheckedUpdateWithoutEmployerInput = {
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isBlocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  totpSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totpEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   receiveEmailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
   candidate?: Prisma.CandidateUncheckedUpdateOneWithoutUserNestedInput
   userPhone?: Prisma.UserPhoneUncheckedUpdateOneWithoutUserNestedInput
@@ -1486,6 +1763,7 @@ export type UserUncheckedUpdateWithoutEmployerInput = {
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   cvs?: Prisma.CvUncheckedUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutActorUserNestedInput
+  blogPosts?: Prisma.BlogPostUncheckedUpdateManyWithoutAuthorNestedInput
   chatEmployerConversations?: Prisma.ChatConversationUncheckedUpdateManyWithoutEmployerUserNestedInput
   chatCandidateConversations?: Prisma.ChatConversationUncheckedUpdateManyWithoutCandidateUserNestedInput
   chatMessagesSent?: Prisma.ChatMessageUncheckedUpdateManyWithoutSenderNestedInput
@@ -1501,6 +1779,8 @@ export type UserCreateWithoutNotificationsInput = {
   deletedAt?: Date | string | null
   isVerified?: boolean
   isBlocked?: boolean
+  totpSecret?: string | null
+  totpEnabled?: boolean
   receiveEmailNotifications?: boolean
   candidate?: Prisma.CandidateCreateNestedOneWithoutUserInput
   employer?: Prisma.EmployerCreateNestedOneWithoutUserInput
@@ -1509,6 +1789,7 @@ export type UserCreateWithoutNotificationsInput = {
   userRoles?: Prisma.UserRoleCreateNestedManyWithoutUserInput
   cvs?: Prisma.CvCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutActorUserInput
+  blogPosts?: Prisma.BlogPostCreateNestedManyWithoutAuthorInput
   chatEmployerConversations?: Prisma.ChatConversationCreateNestedManyWithoutEmployerUserInput
   chatCandidateConversations?: Prisma.ChatConversationCreateNestedManyWithoutCandidateUserInput
   chatMessagesSent?: Prisma.ChatMessageCreateNestedManyWithoutSenderInput
@@ -1525,6 +1806,8 @@ export type UserUncheckedCreateWithoutNotificationsInput = {
   deletedAt?: Date | string | null
   isVerified?: boolean
   isBlocked?: boolean
+  totpSecret?: string | null
+  totpEnabled?: boolean
   receiveEmailNotifications?: boolean
   candidate?: Prisma.CandidateUncheckedCreateNestedOneWithoutUserInput
   employer?: Prisma.EmployerUncheckedCreateNestedOneWithoutUserInput
@@ -1533,6 +1816,7 @@ export type UserUncheckedCreateWithoutNotificationsInput = {
   userRoles?: Prisma.UserRoleUncheckedCreateNestedManyWithoutUserInput
   cvs?: Prisma.CvUncheckedCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutActorUserInput
+  blogPosts?: Prisma.BlogPostUncheckedCreateNestedManyWithoutAuthorInput
   chatEmployerConversations?: Prisma.ChatConversationUncheckedCreateNestedManyWithoutEmployerUserInput
   chatCandidateConversations?: Prisma.ChatConversationUncheckedCreateNestedManyWithoutCandidateUserInput
   chatMessagesSent?: Prisma.ChatMessageUncheckedCreateNestedManyWithoutSenderInput
@@ -1564,6 +1848,8 @@ export type UserUpdateWithoutNotificationsInput = {
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isBlocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  totpSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totpEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   receiveEmailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
   candidate?: Prisma.CandidateUpdateOneWithoutUserNestedInput
   employer?: Prisma.EmployerUpdateOneWithoutUserNestedInput
@@ -1572,6 +1858,7 @@ export type UserUpdateWithoutNotificationsInput = {
   userRoles?: Prisma.UserRoleUpdateManyWithoutUserNestedInput
   cvs?: Prisma.CvUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutActorUserNestedInput
+  blogPosts?: Prisma.BlogPostUpdateManyWithoutAuthorNestedInput
   chatEmployerConversations?: Prisma.ChatConversationUpdateManyWithoutEmployerUserNestedInput
   chatCandidateConversations?: Prisma.ChatConversationUpdateManyWithoutCandidateUserNestedInput
   chatMessagesSent?: Prisma.ChatMessageUpdateManyWithoutSenderNestedInput
@@ -1588,6 +1875,8 @@ export type UserUncheckedUpdateWithoutNotificationsInput = {
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isBlocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  totpSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totpEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   receiveEmailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
   candidate?: Prisma.CandidateUncheckedUpdateOneWithoutUserNestedInput
   employer?: Prisma.EmployerUncheckedUpdateOneWithoutUserNestedInput
@@ -1596,6 +1885,7 @@ export type UserUncheckedUpdateWithoutNotificationsInput = {
   userRoles?: Prisma.UserRoleUncheckedUpdateManyWithoutUserNestedInput
   cvs?: Prisma.CvUncheckedUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutActorUserNestedInput
+  blogPosts?: Prisma.BlogPostUncheckedUpdateManyWithoutAuthorNestedInput
   chatEmployerConversations?: Prisma.ChatConversationUncheckedUpdateManyWithoutEmployerUserNestedInput
   chatCandidateConversations?: Prisma.ChatConversationUncheckedUpdateManyWithoutCandidateUserNestedInput
   chatMessagesSent?: Prisma.ChatMessageUncheckedUpdateManyWithoutSenderNestedInput
@@ -1611,6 +1901,8 @@ export type UserCreateWithoutUserPermissionsInput = {
   deletedAt?: Date | string | null
   isVerified?: boolean
   isBlocked?: boolean
+  totpSecret?: string | null
+  totpEnabled?: boolean
   receiveEmailNotifications?: boolean
   candidate?: Prisma.CandidateCreateNestedOneWithoutUserInput
   employer?: Prisma.EmployerCreateNestedOneWithoutUserInput
@@ -1619,6 +1911,7 @@ export type UserCreateWithoutUserPermissionsInput = {
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
   cvs?: Prisma.CvCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutActorUserInput
+  blogPosts?: Prisma.BlogPostCreateNestedManyWithoutAuthorInput
   chatEmployerConversations?: Prisma.ChatConversationCreateNestedManyWithoutEmployerUserInput
   chatCandidateConversations?: Prisma.ChatConversationCreateNestedManyWithoutCandidateUserInput
   chatMessagesSent?: Prisma.ChatMessageCreateNestedManyWithoutSenderInput
@@ -1635,6 +1928,8 @@ export type UserUncheckedCreateWithoutUserPermissionsInput = {
   deletedAt?: Date | string | null
   isVerified?: boolean
   isBlocked?: boolean
+  totpSecret?: string | null
+  totpEnabled?: boolean
   receiveEmailNotifications?: boolean
   candidate?: Prisma.CandidateUncheckedCreateNestedOneWithoutUserInput
   employer?: Prisma.EmployerUncheckedCreateNestedOneWithoutUserInput
@@ -1643,6 +1938,7 @@ export type UserUncheckedCreateWithoutUserPermissionsInput = {
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   cvs?: Prisma.CvUncheckedCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutActorUserInput
+  blogPosts?: Prisma.BlogPostUncheckedCreateNestedManyWithoutAuthorInput
   chatEmployerConversations?: Prisma.ChatConversationUncheckedCreateNestedManyWithoutEmployerUserInput
   chatCandidateConversations?: Prisma.ChatConversationUncheckedCreateNestedManyWithoutCandidateUserInput
   chatMessagesSent?: Prisma.ChatMessageUncheckedCreateNestedManyWithoutSenderInput
@@ -1674,6 +1970,8 @@ export type UserUpdateWithoutUserPermissionsInput = {
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isBlocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  totpSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totpEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   receiveEmailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
   candidate?: Prisma.CandidateUpdateOneWithoutUserNestedInput
   employer?: Prisma.EmployerUpdateOneWithoutUserNestedInput
@@ -1682,6 +1980,7 @@ export type UserUpdateWithoutUserPermissionsInput = {
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   cvs?: Prisma.CvUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutActorUserNestedInput
+  blogPosts?: Prisma.BlogPostUpdateManyWithoutAuthorNestedInput
   chatEmployerConversations?: Prisma.ChatConversationUpdateManyWithoutEmployerUserNestedInput
   chatCandidateConversations?: Prisma.ChatConversationUpdateManyWithoutCandidateUserNestedInput
   chatMessagesSent?: Prisma.ChatMessageUpdateManyWithoutSenderNestedInput
@@ -1698,6 +1997,8 @@ export type UserUncheckedUpdateWithoutUserPermissionsInput = {
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isBlocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  totpSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totpEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   receiveEmailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
   candidate?: Prisma.CandidateUncheckedUpdateOneWithoutUserNestedInput
   employer?: Prisma.EmployerUncheckedUpdateOneWithoutUserNestedInput
@@ -1706,6 +2007,7 @@ export type UserUncheckedUpdateWithoutUserPermissionsInput = {
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   cvs?: Prisma.CvUncheckedUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutActorUserNestedInput
+  blogPosts?: Prisma.BlogPostUncheckedUpdateManyWithoutAuthorNestedInput
   chatEmployerConversations?: Prisma.ChatConversationUncheckedUpdateManyWithoutEmployerUserNestedInput
   chatCandidateConversations?: Prisma.ChatConversationUncheckedUpdateManyWithoutCandidateUserNestedInput
   chatMessagesSent?: Prisma.ChatMessageUncheckedUpdateManyWithoutSenderNestedInput
@@ -1721,6 +2023,8 @@ export type UserCreateWithoutUserPhoneInput = {
   deletedAt?: Date | string | null
   isVerified?: boolean
   isBlocked?: boolean
+  totpSecret?: string | null
+  totpEnabled?: boolean
   receiveEmailNotifications?: boolean
   candidate?: Prisma.CandidateCreateNestedOneWithoutUserInput
   employer?: Prisma.EmployerCreateNestedOneWithoutUserInput
@@ -1729,6 +2033,7 @@ export type UserCreateWithoutUserPhoneInput = {
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
   cvs?: Prisma.CvCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutActorUserInput
+  blogPosts?: Prisma.BlogPostCreateNestedManyWithoutAuthorInput
   chatEmployerConversations?: Prisma.ChatConversationCreateNestedManyWithoutEmployerUserInput
   chatCandidateConversations?: Prisma.ChatConversationCreateNestedManyWithoutCandidateUserInput
   chatMessagesSent?: Prisma.ChatMessageCreateNestedManyWithoutSenderInput
@@ -1745,6 +2050,8 @@ export type UserUncheckedCreateWithoutUserPhoneInput = {
   deletedAt?: Date | string | null
   isVerified?: boolean
   isBlocked?: boolean
+  totpSecret?: string | null
+  totpEnabled?: boolean
   receiveEmailNotifications?: boolean
   candidate?: Prisma.CandidateUncheckedCreateNestedOneWithoutUserInput
   employer?: Prisma.EmployerUncheckedCreateNestedOneWithoutUserInput
@@ -1753,6 +2060,7 @@ export type UserUncheckedCreateWithoutUserPhoneInput = {
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   cvs?: Prisma.CvUncheckedCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutActorUserInput
+  blogPosts?: Prisma.BlogPostUncheckedCreateNestedManyWithoutAuthorInput
   chatEmployerConversations?: Prisma.ChatConversationUncheckedCreateNestedManyWithoutEmployerUserInput
   chatCandidateConversations?: Prisma.ChatConversationUncheckedCreateNestedManyWithoutCandidateUserInput
   chatMessagesSent?: Prisma.ChatMessageUncheckedCreateNestedManyWithoutSenderInput
@@ -1784,6 +2092,8 @@ export type UserUpdateWithoutUserPhoneInput = {
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isBlocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  totpSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totpEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   receiveEmailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
   candidate?: Prisma.CandidateUpdateOneWithoutUserNestedInput
   employer?: Prisma.EmployerUpdateOneWithoutUserNestedInput
@@ -1792,6 +2102,7 @@ export type UserUpdateWithoutUserPhoneInput = {
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   cvs?: Prisma.CvUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutActorUserNestedInput
+  blogPosts?: Prisma.BlogPostUpdateManyWithoutAuthorNestedInput
   chatEmployerConversations?: Prisma.ChatConversationUpdateManyWithoutEmployerUserNestedInput
   chatCandidateConversations?: Prisma.ChatConversationUpdateManyWithoutCandidateUserNestedInput
   chatMessagesSent?: Prisma.ChatMessageUpdateManyWithoutSenderNestedInput
@@ -1808,6 +2119,8 @@ export type UserUncheckedUpdateWithoutUserPhoneInput = {
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isBlocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  totpSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totpEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   receiveEmailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
   candidate?: Prisma.CandidateUncheckedUpdateOneWithoutUserNestedInput
   employer?: Prisma.EmployerUncheckedUpdateOneWithoutUserNestedInput
@@ -1816,6 +2129,7 @@ export type UserUncheckedUpdateWithoutUserPhoneInput = {
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   cvs?: Prisma.CvUncheckedUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutActorUserNestedInput
+  blogPosts?: Prisma.BlogPostUncheckedUpdateManyWithoutAuthorNestedInput
   chatEmployerConversations?: Prisma.ChatConversationUncheckedUpdateManyWithoutEmployerUserNestedInput
   chatCandidateConversations?: Prisma.ChatConversationUncheckedUpdateManyWithoutCandidateUserNestedInput
   chatMessagesSent?: Prisma.ChatMessageUncheckedUpdateManyWithoutSenderNestedInput
@@ -1831,6 +2145,8 @@ export type UserCreateWithoutUserRolesInput = {
   deletedAt?: Date | string | null
   isVerified?: boolean
   isBlocked?: boolean
+  totpSecret?: string | null
+  totpEnabled?: boolean
   receiveEmailNotifications?: boolean
   candidate?: Prisma.CandidateCreateNestedOneWithoutUserInput
   employer?: Prisma.EmployerCreateNestedOneWithoutUserInput
@@ -1839,6 +2155,7 @@ export type UserCreateWithoutUserRolesInput = {
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
   cvs?: Prisma.CvCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutActorUserInput
+  blogPosts?: Prisma.BlogPostCreateNestedManyWithoutAuthorInput
   chatEmployerConversations?: Prisma.ChatConversationCreateNestedManyWithoutEmployerUserInput
   chatCandidateConversations?: Prisma.ChatConversationCreateNestedManyWithoutCandidateUserInput
   chatMessagesSent?: Prisma.ChatMessageCreateNestedManyWithoutSenderInput
@@ -1855,6 +2172,8 @@ export type UserUncheckedCreateWithoutUserRolesInput = {
   deletedAt?: Date | string | null
   isVerified?: boolean
   isBlocked?: boolean
+  totpSecret?: string | null
+  totpEnabled?: boolean
   receiveEmailNotifications?: boolean
   candidate?: Prisma.CandidateUncheckedCreateNestedOneWithoutUserInput
   employer?: Prisma.EmployerUncheckedCreateNestedOneWithoutUserInput
@@ -1863,6 +2182,7 @@ export type UserUncheckedCreateWithoutUserRolesInput = {
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   cvs?: Prisma.CvUncheckedCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutActorUserInput
+  blogPosts?: Prisma.BlogPostUncheckedCreateNestedManyWithoutAuthorInput
   chatEmployerConversations?: Prisma.ChatConversationUncheckedCreateNestedManyWithoutEmployerUserInput
   chatCandidateConversations?: Prisma.ChatConversationUncheckedCreateNestedManyWithoutCandidateUserInput
   chatMessagesSent?: Prisma.ChatMessageUncheckedCreateNestedManyWithoutSenderInput
@@ -1894,6 +2214,8 @@ export type UserUpdateWithoutUserRolesInput = {
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isBlocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  totpSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totpEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   receiveEmailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
   candidate?: Prisma.CandidateUpdateOneWithoutUserNestedInput
   employer?: Prisma.EmployerUpdateOneWithoutUserNestedInput
@@ -1902,6 +2224,7 @@ export type UserUpdateWithoutUserRolesInput = {
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   cvs?: Prisma.CvUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutActorUserNestedInput
+  blogPosts?: Prisma.BlogPostUpdateManyWithoutAuthorNestedInput
   chatEmployerConversations?: Prisma.ChatConversationUpdateManyWithoutEmployerUserNestedInput
   chatCandidateConversations?: Prisma.ChatConversationUpdateManyWithoutCandidateUserNestedInput
   chatMessagesSent?: Prisma.ChatMessageUpdateManyWithoutSenderNestedInput
@@ -1918,6 +2241,8 @@ export type UserUncheckedUpdateWithoutUserRolesInput = {
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isBlocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  totpSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totpEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   receiveEmailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
   candidate?: Prisma.CandidateUncheckedUpdateOneWithoutUserNestedInput
   employer?: Prisma.EmployerUncheckedUpdateOneWithoutUserNestedInput
@@ -1926,6 +2251,7 @@ export type UserUncheckedUpdateWithoutUserRolesInput = {
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   cvs?: Prisma.CvUncheckedUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutActorUserNestedInput
+  blogPosts?: Prisma.BlogPostUncheckedUpdateManyWithoutAuthorNestedInput
   chatEmployerConversations?: Prisma.ChatConversationUncheckedUpdateManyWithoutEmployerUserNestedInput
   chatCandidateConversations?: Prisma.ChatConversationUncheckedUpdateManyWithoutCandidateUserNestedInput
   chatMessagesSent?: Prisma.ChatMessageUncheckedUpdateManyWithoutSenderNestedInput
@@ -1942,6 +2268,7 @@ export type UserCountOutputType = {
   notifications: number
   cvs: number
   auditLogs: number
+  blogPosts: number
   chatEmployerConversations: number
   chatCandidateConversations: number
   chatMessagesSent: number
@@ -1953,6 +2280,7 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   notifications?: boolean | UserCountOutputTypeCountNotificationsArgs
   cvs?: boolean | UserCountOutputTypeCountCvsArgs
   auditLogs?: boolean | UserCountOutputTypeCountAuditLogsArgs
+  blogPosts?: boolean | UserCountOutputTypeCountBlogPostsArgs
   chatEmployerConversations?: boolean | UserCountOutputTypeCountChatEmployerConversationsArgs
   chatCandidateConversations?: boolean | UserCountOutputTypeCountChatCandidateConversationsArgs
   chatMessagesSent?: boolean | UserCountOutputTypeCountChatMessagesSentArgs
@@ -2006,6 +2334,13 @@ export type UserCountOutputTypeCountAuditLogsArgs<ExtArgs extends runtime.Types.
 /**
  * UserCountOutputType without action
  */
+export type UserCountOutputTypeCountBlogPostsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.BlogPostWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
 export type UserCountOutputTypeCountChatEmployerConversationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.ChatConversationWhereInput
 }
@@ -2036,6 +2371,8 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   deletedAt?: boolean
   isVerified?: boolean
   isBlocked?: boolean
+  totpSecret?: boolean
+  totpEnabled?: boolean
   receiveEmailNotifications?: boolean
   candidate?: boolean | Prisma.User$candidateArgs<ExtArgs>
   employer?: boolean | Prisma.User$employerArgs<ExtArgs>
@@ -2045,6 +2382,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   notifications?: boolean | Prisma.User$notificationsArgs<ExtArgs>
   cvs?: boolean | Prisma.User$cvsArgs<ExtArgs>
   auditLogs?: boolean | Prisma.User$auditLogsArgs<ExtArgs>
+  blogPosts?: boolean | Prisma.User$blogPostsArgs<ExtArgs>
   chatEmployerConversations?: boolean | Prisma.User$chatEmployerConversationsArgs<ExtArgs>
   chatCandidateConversations?: boolean | Prisma.User$chatCandidateConversationsArgs<ExtArgs>
   chatMessagesSent?: boolean | Prisma.User$chatMessagesSentArgs<ExtArgs>
@@ -2064,10 +2402,12 @@ export type UserSelectScalar = {
   deletedAt?: boolean
   isVerified?: boolean
   isBlocked?: boolean
+  totpSecret?: boolean
+  totpEnabled?: boolean
   receiveEmailNotifications?: boolean
 }
 
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "username" | "password" | "avatar" | "createdAt" | "updatedAt" | "deletedAt" | "isVerified" | "isBlocked" | "receiveEmailNotifications", ExtArgs["result"]["user"]>
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "username" | "password" | "avatar" | "createdAt" | "updatedAt" | "deletedAt" | "isVerified" | "isBlocked" | "totpSecret" | "totpEnabled" | "receiveEmailNotifications", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   candidate?: boolean | Prisma.User$candidateArgs<ExtArgs>
   employer?: boolean | Prisma.User$employerArgs<ExtArgs>
@@ -2077,6 +2417,7 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   notifications?: boolean | Prisma.User$notificationsArgs<ExtArgs>
   cvs?: boolean | Prisma.User$cvsArgs<ExtArgs>
   auditLogs?: boolean | Prisma.User$auditLogsArgs<ExtArgs>
+  blogPosts?: boolean | Prisma.User$blogPostsArgs<ExtArgs>
   chatEmployerConversations?: boolean | Prisma.User$chatEmployerConversationsArgs<ExtArgs>
   chatCandidateConversations?: boolean | Prisma.User$chatCandidateConversationsArgs<ExtArgs>
   chatMessagesSent?: boolean | Prisma.User$chatMessagesSentArgs<ExtArgs>
@@ -2094,6 +2435,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     notifications: Prisma.$NotificationPayload<ExtArgs>[]
     cvs: Prisma.$CvPayload<ExtArgs>[]
     auditLogs: Prisma.$AuditLogPayload<ExtArgs>[]
+    blogPosts: Prisma.$BlogPostPayload<ExtArgs>[]
     chatEmployerConversations: Prisma.$ChatConversationPayload<ExtArgs>[]
     chatCandidateConversations: Prisma.$ChatConversationPayload<ExtArgs>[]
     chatMessagesSent: Prisma.$ChatMessagePayload<ExtArgs>[]
@@ -2109,6 +2451,8 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     deletedAt: Date | null
     isVerified: boolean
     isBlocked: boolean
+    totpSecret: string | null
+    totpEnabled: boolean
     receiveEmailNotifications: boolean
   }, ExtArgs["result"]["user"]>
   composites: {}
@@ -2458,6 +2802,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   notifications<T extends Prisma.User$notificationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$notificationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   cvs<T extends Prisma.User$cvsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$cvsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CvPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   auditLogs<T extends Prisma.User$auditLogsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$auditLogsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AuditLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  blogPosts<T extends Prisma.User$blogPostsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$blogPostsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$BlogPostPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   chatEmployerConversations<T extends Prisma.User$chatEmployerConversationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$chatEmployerConversationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ChatConversationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   chatCandidateConversations<T extends Prisma.User$chatCandidateConversationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$chatCandidateConversationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ChatConversationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   chatMessagesSent<T extends Prisma.User$chatMessagesSentArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$chatMessagesSentArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ChatMessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -2500,6 +2845,8 @@ export interface UserFieldRefs {
   readonly deletedAt: Prisma.FieldRef<"User", 'DateTime'>
   readonly isVerified: Prisma.FieldRef<"User", 'Boolean'>
   readonly isBlocked: Prisma.FieldRef<"User", 'Boolean'>
+  readonly totpSecret: Prisma.FieldRef<"User", 'String'>
+  readonly totpEnabled: Prisma.FieldRef<"User", 'Boolean'>
   readonly receiveEmailNotifications: Prisma.FieldRef<"User", 'Boolean'>
 }
     
@@ -3023,6 +3370,30 @@ export type User$auditLogsArgs<ExtArgs extends runtime.Types.Extensions.Internal
   take?: number
   skip?: number
   distinct?: Prisma.AuditLogScalarFieldEnum | Prisma.AuditLogScalarFieldEnum[]
+}
+
+/**
+ * User.blogPosts
+ */
+export type User$blogPostsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the BlogPost
+   */
+  select?: Prisma.BlogPostSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the BlogPost
+   */
+  omit?: Prisma.BlogPostOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.BlogPostInclude<ExtArgs> | null
+  where?: Prisma.BlogPostWhereInput
+  orderBy?: Prisma.BlogPostOrderByWithRelationInput | Prisma.BlogPostOrderByWithRelationInput[]
+  cursor?: Prisma.BlogPostWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.BlogPostScalarFieldEnum | Prisma.BlogPostScalarFieldEnum[]
 }
 
 /**

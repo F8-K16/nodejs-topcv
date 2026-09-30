@@ -6,7 +6,7 @@ import { applicationController } from "../controllers/application.controller";
 import { notificationController } from "../controllers/notification.controller";
 import { validate } from "../middlewares/validate.middleware";
 import { changePasswordSchema } from "../schemas/auth.schema";
-import { applyJobSchema } from "../schemas/application.schema";
+import { applyJobSchema, bulkWithdrawApplicationsSchema } from "../schemas/application.schema";
 
 const router = express.Router();
 
@@ -50,6 +50,14 @@ router.get(
   authMiddleware,
   requireRole("CANDIDATE"),
   applicationController.appliedJobIds,
+);
+
+router.post(
+  "/applications/bulk-withdraw",
+  authMiddleware,
+  requireRole("CANDIDATE"),
+  validate(bulkWithdrawApplicationsSchema),
+  applicationController.bulkWithdraw,
 );
 
 router.get(

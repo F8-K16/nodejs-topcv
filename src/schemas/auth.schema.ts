@@ -139,6 +139,20 @@ export const resetPasswordSchema = z.object({
   newPassword: passwordSchema,
 });
 
+export const twoFactorCodeSchema = z.object({
+  code: z.string().regex(/^\d{6}$/, "Mã xác thực gồm 6 chữ số"),
+});
+
+export const twoFactorVerifySchema = z.object({
+  challengeToken: z.string().min(20, "Phiên xác thực không hợp lệ"),
+  code: z.string().regex(/^\d{6}$/, "Mã xác thực gồm 6 chữ số"),
+});
+
+export const twoFactorDisableSchema = z.object({
+  code: z.string().regex(/^\d{6}$/, "Mã xác thực gồm 6 chữ số"),
+  password: passwordSchema,
+});
+
 export const changePasswordSchema = z
   .object({
     oldPassword: passwordSchema,

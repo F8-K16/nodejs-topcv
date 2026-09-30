@@ -1,0 +1,13 @@
+<%- include('partials/email-top', { pageTitle: 'Đã nhận liên hệ' }) %>
+        <h1 class="email-title">Chúng tôi đã nhận được tin nhắn</h1>
+        <%- include('partials/email-greeting') %>
+        <p class="email-text">
+          Cảm ơn bạn đã liên hệ <strong><%= appName %></strong>. Chủ đề:
+          <strong><%= topic %></strong>.
+        </p>
+        <p class="email-text">
+          Đội ngũ hỗ trợ sẽ phản hồi qua email trong thời gian sớm nhất (thường trong giờ làm việc).
+        </p>
+        <a href="<%= siteUrl %>/contact" class="email-btn">Quay lại trang liên hệ</a>
+        <p class="email-text" style="margin-top: 20px; margin-bottom: 0">Trân trọng!</p>
+<%- include('partials/email-bottom') %>

@@ -4,7 +4,7 @@ import { Prisma } from "../generated/prisma/client";
 import {
   CacheKeys,
   cacheGetJson,
-  cacheSetJsonPersistent,
+  cacheSetJson,
   invalidateSkillCaches,
   stableCacheHash,
 } from "../utils/cache";
@@ -64,18 +64,27 @@ export const skillService = {
       },
     };
 
-    await cacheSetJsonPersistent(cacheKey, payload);
+    await cacheSetJson(cacheKey, payload, 7200);
     return payload;
   },
 
   async create(name: string) {
+    const trimmed = name.trim();
     const existing = await prisma.skill.findFirst({
-      where: { name, deletedAt: null },
+      where: { name: trimmed },
     });
-    if (existing) {
+    if (existing && existing.deletedAt == null) {
       throw new HttpException("Kỹ năng đã tồn tại", 400);
     }
-    const row = await prisma.skill.create({ data: { name } });
+    if (existing?.deletedAt != null) {
+      const row = await prisma.skill.update({
+        where: { id: existing.id },
+        data: { deletedAt: null, name: trimmed },
+      });
+      await invalidateSkillCaches();
+      return row;
+    }
+    const row = await prisma.skill.create({ data: { name: trimmed } });
     await invalidateSkillCaches();
     return row;
   },
@@ -153,7 +162,7 @@ export const skillService = {
       orderBy: { name: "asc" },
       select: { id: true, name: true },
     });
-    await cacheSetJsonPersistent(CacheKeys.skillsSelect, rows);
+    await cacheSetJson(CacheKeys.skillsSelect, rows, 7200);
     return rows;
   },
 };

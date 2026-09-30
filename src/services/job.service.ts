@@ -1,4 +1,8 @@
-import { prisma, prismaTransaction } from "../utils/prisma";
+import {
+  prisma,
+  prismaTransaction,
+  type PrismaTransactionClient,
+} from "../utils/prisma";
 import { HttpException } from "../utils/exception";
 import { env } from "../config/env";
 import {
@@ -40,6 +44,7 @@ import {
   Prisma,
 } from "../generated/prisma/client";
 import { buildSalaryFilter, toNumberArray } from "../utils/helper";
+import { slugify } from "../utils/slug";
 import {
   NotificationType,
   notificationService,
@@ -47,6 +52,34 @@ import {
 } from "./notification.service";
 
 export type JobListMode = "public" | "admin";
+
+const RESERVED_JOB_SLUGS = new Set(["recommended", "suggest", "saved"]);
+
+async function allocateJobSlug(
+  title: string,
+  excludeId?: number,
+  tx: PrismaTransactionClient | typeof prisma = prisma,
+) {
+  const base = slugify(title).replace(/^cong-ty$/, "viec-lam") || "viec-lam";
+  let candidate = RESERVED_JOB_SLUGS.has(base) ? `${base}-2` : base;
+  let n = RESERVED_JOB_SLUGS.has(base) ? 3 : 2;
+  while (n < 500) {
+    if (!RESERVED_JOB_SLUGS.has(candidate)) {
+      const found = await tx.job.findFirst({
+        where: {
+          slug: candidate,
+          ...(excludeId ? { NOT: { id: excludeId } } : {}),
+        },
+        select: { id: true },
+      });
+      if (!found) return candidate;
+    }
+    const suffix = `-${n}`;
+    candidate = `${base.slice(0, 180 - suffix.length)}${suffix}`;
+    n += 1;
+  }
+  throw new HttpException("Không tạo được đường dẫn việc làm", 500);
+}
 
 export type JobListQuery = {
   page?: number;
@@ -403,20 +436,31 @@ async function fetchJobsList(query: JobListQuery, mode: JobListMode) {
   const skip = (page - 1) * limit;
 
   const base = buildBaseWhere(query);
+  const rawCategoryIds = [
+    ...(Array.isArray(query.categoryIds) ? query.categoryIds : []),
+    ...(query.categoryId ? [Number(query.categoryId)] : []),
+  ]
+    .map((x) => Number(x))
+    .filter((n) => Number.isFinite(n) && n !== 0)
+    .map((n) => Math.trunc(n));
   const selectedCategoryIds = new Set<number>(
-    [
-      ...(Array.isArray(query.categoryIds) ? query.categoryIds : []),
-      ...(query.categoryId ? [Number(query.categoryId)] : []),
-    ]
-      .map((x) => Number(x))
-      .filter((n) => Number.isFinite(n) && n > 0)
-      .map((n) => Math.trunc(n)),
+    rawCategoryIds.filter((n) => n > 0),
+  );
+  const parentCategoryIds = new Set<number>(
+    rawCategoryIds.filter((n) => n < 0).map((n) => -n),
   );
 
   const parentCategoryId = Number(query.parentCategoryId);
-  if (Number.isFinite(parentCategoryId) && parentCategoryId > 0) {
+  if (Number.isFinite(parentCategoryId) && parentCategoryId !== 0) {
+    parentCategoryIds.add(Math.abs(Math.trunc(parentCategoryId)));
+  }
+
+  if (parentCategoryIds.size) {
     const children = await prisma.category.findMany({
-      where: { parentCategoryId: Math.trunc(parentCategoryId), deletedAt: null },
+      where: {
+        parentCategoryId: { in: [...parentCategoryIds] },
+        deletedAt: null,
+      },
       select: { id: true },
     });
     for (const child of children) {
@@ -429,6 +473,9 @@ async function fetchJobsList(query: JobListQuery, mode: JobListMode) {
     const ids = [...selectedCategoryIds];
     expandedCategoryIds = ids;
     (base as Prisma.JobWhereInput).categoryId = { in: ids };
+  } else if (parentCategoryIds.size) {
+    expandedCategoryIds = [-1];
+    (base as Prisma.JobWhereInput).categoryId = { in: [-1] };
   }
   const now = new Date();
   const filters: Prisma.JobWhereInput[] = [base];
@@ -630,6 +677,41 @@ function isLegacyFullJobListCache(hit: unknown): hit is JobListPayload {
   );
 }
 
+const ALLOWED_VIEW_SOURCES = new Set([
+  "direct",
+  "organic",
+  "jobs",
+  "company",
+  "home",
+  "search",
+  "referral",
+  "social",
+  "email",
+  "other",
+]);
+
+export function normalizeJobViewSource(raw?: string | null): string {
+  const value = String(raw ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]/g, "")
+    .slice(0, 64);
+  if (!value) return "direct";
+  if (ALLOWED_VIEW_SOURCES.has(value)) return value;
+  if (value.includes("google") || value.includes("bing") || value.includes("coccoc")) {
+    return "organic";
+  }
+  if (
+    value.includes("facebook") ||
+    value.includes("linkedin") ||
+    value.includes("twitter") ||
+    value.includes("tiktok")
+  ) {
+    return "social";
+  }
+  return "other";
+}
+
 export const jobService = {
   async createJob(data: JobDTO) {
     const company = await prisma.company.findUnique({
@@ -682,9 +764,11 @@ export const jobService = {
     const { skillIds, deadline, ...rest } = data;
 
     const result = await prismaTransaction(async (tx) => {
+      const slug = await allocateJobSlug(rest.title, undefined, tx);
       const job = await tx.job.create({
         data: {
           ...rest,
+          slug,
           deadline: normalizeDeadline(deadline) ?? null,
         },
       });
@@ -984,12 +1068,26 @@ export const jobService = {
     return { suggestions: out.slice(0, 12) };
   },
 
+  async getPublicJobByKey(key: string) {
+    const trimmed = key.trim();
+    if (!trimmed) return null;
+    if (/^\d+$/.test(trimmed)) {
+      return this.getJobById(Number(trimmed), "public");
+    }
+    const row = await prisma.job.findFirst({
+      where: { slug: trimmed, deletedAt: null },
+      select: { id: true },
+    });
+    if (!row) return null;
+    return this.getJobById(row.id, "public");
+  },
+
   async getJobById(id: number, mode: JobListMode = "public") {
     if (isNaN(id)) throw new HttpException("Invalid ID", 400);
 
     if (mode === "public" && env.CACHE_ENABLED) {
       const surfaceVer = await getPublicSurfaceVersion();
-      const cached = await cacheGetJson(
+      const cached = await cacheGetJson<{ id: number }>(
         CacheKeys.jobPublicDetail(surfaceVer, id),
       );
       if (cached) return cached;
@@ -1082,6 +1180,31 @@ export const jobService = {
     return u.viewCount;
   },
 
+  async trackPublicJobViewSource(id: number, sourceRaw?: string) {
+    if (isNaN(id)) return null;
+    const source = normalizeJobViewSource(sourceRaw);
+    const now = new Date();
+    const exists = await prisma.job.findFirst({
+      where: {
+        id,
+        deletedAt: null,
+        moderationStatus: JobModerationStatus.APPROVED,
+        company: { status: true, deletedAt: null },
+        category: { deletedAt: null },
+        OR: [{ deadline: null }, { deadline: { gte: now } }],
+      },
+      select: { id: true },
+    });
+    if (!exists) return null;
+
+    await prisma.jobViewSource.upsert({
+      where: { jobId_source: { jobId: id, source } },
+      create: { jobId: id, source, views: 1 },
+      update: { views: { increment: 1 } },
+    });
+    return { jobId: id, source };
+  },
+
   async updateJob(id: number, data: Partial<JobDTO>) {
     if (isNaN(id)) throw new HttpException("Invalid ID", 400);
     const job = await prisma.job.findFirst({
@@ -1139,8 +1262,18 @@ export const jobService = {
       }
     }
 
+    const nextTitle =
+      typeof rest.title === "string" && rest.title.trim()
+        ? rest.title.trim()
+        : job.title;
+    const slug =
+      nextTitle !== job.title
+        ? await allocateJobSlug(nextTitle, job.id)
+        : undefined;
+
     const updatePayload: Prisma.JobUpdateInput = {
       ...rest,
+      ...(slug ? { slug } : {}),
       category: { connect: { id: categoryId } },
       company: { connect: { id: companyId } },
     };

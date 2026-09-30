@@ -28,7 +28,7 @@ export const createCvTemplateSchema = z.object({
   description: z.string().trim().max(255).optional().nullable(),
   thumbnailUrl: z.string().trim().url().max(512).optional().nullable(),
   templateData: cvTemplateDataSchema,
-  isActive: z.boolean().optional(),
+  status: z.boolean().optional(),
 });
 
 export const updateCvTemplateSchema = z.object({
@@ -36,7 +36,7 @@ export const updateCvTemplateSchema = z.object({
   description: z.string().trim().max(255).optional().nullable(),
   thumbnailUrl: z.string().trim().url().max(512).optional().nullable(),
   templateData: cvTemplateDataSchema.optional(),
-  isActive: z.boolean().optional(),
+  status: z.boolean().optional(),
 });
 
 export type CvCreateInput = z.infer<typeof cvCreateSchema>;

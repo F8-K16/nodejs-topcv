@@ -33,6 +33,33 @@ export const tokenRateLimiter = rateLimit({
   },
 });
 
+export const PUBLIC_CATALOG_RATE_LIMIT = {
+  windowMs: 60 * 1000,
+  limit: 90,
+} as const;
+
+export const publicCatalogRateLimiter = rateLimit({
+  windowMs: PUBLIC_CATALOG_RATE_LIMIT.windowMs,
+  limit: PUBLIC_CATALOG_RATE_LIMIT.limit,
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+  message: {
+    code: "TOO_MANY_REQUESTS",
+    message: "Quá nhiều yêu cầu. Vui lòng thử lại sau một phút.",
+  },
+});
+
+export const contactRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 5,
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+  message: {
+    code: "TOO_MANY_REQUESTS",
+    message: "Bạn gửi liên hệ hơi nhanh. Vui lòng thử lại sau ít phút.",
+  },
+});
+
 export const aiRateLimiter = rateLimit({
   windowMs: 60 * 1000,
   limit: 15,

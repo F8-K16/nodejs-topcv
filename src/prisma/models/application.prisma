@@ -14,7 +14,7 @@ model Application {
   resumeId    Int?
   candidate   Candidate         @relation(fields: [candidateId], references: [id])
   job         Job               @relation(fields: [jobId], references: [id])
-  resume      Resume?           @relation(fields: [resumeId], references: [id])
+  resume      Resume?           @relation(fields: [resumeId], references: [id], onDelete: SetNull)
 
   @@unique([candidateId, jobId], map: "applications_candidate_job_unique")
   @@index([candidateId], map: "applications_candidateId_fkey")

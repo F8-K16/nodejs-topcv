@@ -197,7 +197,7 @@ export type CandidateGroupByOutputType = {
   _max: CandidateMaxAggregateOutputType | null
 }
 
-type GetCandidateGroupByPayload<T extends CandidateGroupByArgs> = Prisma.PrismaPromise<
+export type GetCandidateGroupByPayload<T extends CandidateGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<CandidateGroupByOutputType, T['by']> &
       {

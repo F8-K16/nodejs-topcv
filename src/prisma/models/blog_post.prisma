@@ -1,0 +1,19 @@
+model BlogPost {
+  id          Int       @id @default(autoincrement())
+  slug        String    @unique @db.VarChar(180)
+  title       String    @db.VarChar(200)
+  excerpt     String    @db.VarChar(500)
+  content     String    @db.Text
+  coverUrl    String?   @db.VarChar(500)
+  publishedAt DateTime? @db.Timestamp(0)
+  createdAt   DateTime  @default(now()) @db.Timestamp(0)
+  updatedAt   DateTime  @updatedAt @db.Timestamp(0)
+  deletedAt   DateTime? @db.Timestamp(0)
+  authorId    Int?
+  author      User?     @relation(fields: [authorId], references: [id], onDelete: SetNull)
+
+  @@index([publishedAt])
+  @@index([deletedAt])
+  @@index([authorId])
+  @@map("blog_posts")
+}

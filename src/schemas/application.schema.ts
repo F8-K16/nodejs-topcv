@@ -9,3 +9,7 @@ export const applyJobSchema = z.object({
   resumeId: z.coerce.number().int().positive("resumeId không hợp lệ"),
   coverLetter: z.string().trim().min(1).max(8000).optional(),
 });
+
+export const bulkWithdrawApplicationsSchema = z.object({
+  ids: z.array(z.coerce.number().int().positive()).min(1).max(50),
+});

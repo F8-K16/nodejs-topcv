@@ -13,11 +13,13 @@ model Cv {
   createdAt    DateTime   @default(now()) @db.Timestamp(0)
   updatedAt    DateTime   @updatedAt @db.Timestamp(0)
   lastEditedAt DateTime   @default(now()) @db.Timestamp(0)
+  deletedAt    DateTime?  @db.Timestamp(0)
 
   user     User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   template CvTemplate @relation(fields: [templateId], references: [id])
 
   @@index([userId, updatedAt], map: "cvs_user_updated_idx")
   @@index([templateId], map: "cvs_templateId_fkey")
+  @@index([deletedAt])
   @@map("cvs")
 }

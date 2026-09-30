@@ -39,6 +39,14 @@ export const authMiddleware = async (
   }
 };
 
+function forbid(req: Request, res: Response) {
+  return sendError(res, 403, {
+    code: "FORBIDDEN",
+    message: "Forbidden",
+    traceId: req.requestId,
+  });
+}
+
 export const requirePermission = (permission: string) => {
   return (req: Request, res: Response, next: NextFunction) => {
     const user = req.user;
@@ -55,14 +63,49 @@ export const requirePermission = (permission: string) => {
     }
 
     if (!user.permissions.includes(permission)) {
-      return sendError(res, 403, {
-        code: "FORBIDDEN",
-        message: "Forbidden",
-        traceId: req.requestId,
-      });
+      return forbid(req, res);
     }
     next();
   };
+};
+
+export const requireAnyPermission = (...permissions: string[]) => {
+  return (req: Request, res: Response, next: NextFunction) => {
+    const user = req.user;
+    if (!user) {
+      return sendError(res, 401, {
+        code: "UNAUTHORIZED",
+        message: "Unauthorized",
+        traceId: req.requestId,
+      });
+    }
+
+    if (user.roles.includes("ADMIN")) {
+      return next();
+    }
+
+    if (!permissions.some((permission) => user.permissions.includes(permission))) {
+      return forbid(req, res);
+    }
+    next();
+  };
+};
+
+export const requireAdminTotp = (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  const user = req.user;
+  if (user?.roles.includes("ADMIN") && user.totpEnabled !== true) {
+    return sendError(res, 403, {
+      code: "TWO_FACTOR_SETUP_REQUIRED",
+      message:
+        "Tài khoản quản trị cần bật xác thực hai lớp trước khi tiếp tục.",
+      traceId: req.requestId,
+    });
+  }
+  return next();
 };
 
 export const requireRole = (...roles: string[]) => {

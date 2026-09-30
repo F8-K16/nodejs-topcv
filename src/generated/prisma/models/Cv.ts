@@ -47,6 +47,7 @@ export type CvMinAggregateOutputType = {
   createdAt: Date | null
   updatedAt: Date | null
   lastEditedAt: Date | null
+  deletedAt: Date | null
 }
 
 export type CvMaxAggregateOutputType = {
@@ -58,6 +59,7 @@ export type CvMaxAggregateOutputType = {
   createdAt: Date | null
   updatedAt: Date | null
   lastEditedAt: Date | null
+  deletedAt: Date | null
 }
 
 export type CvCountAggregateOutputType = {
@@ -70,6 +72,7 @@ export type CvCountAggregateOutputType = {
   createdAt: number
   updatedAt: number
   lastEditedAt: number
+  deletedAt: number
   _all: number
 }
 
@@ -95,6 +98,7 @@ export type CvMinAggregateInputType = {
   createdAt?: true
   updatedAt?: true
   lastEditedAt?: true
+  deletedAt?: true
 }
 
 export type CvMaxAggregateInputType = {
@@ -106,6 +110,7 @@ export type CvMaxAggregateInputType = {
   createdAt?: true
   updatedAt?: true
   lastEditedAt?: true
+  deletedAt?: true
 }
 
 export type CvCountAggregateInputType = {
@@ -118,6 +123,7 @@ export type CvCountAggregateInputType = {
   createdAt?: true
   updatedAt?: true
   lastEditedAt?: true
+  deletedAt?: true
   _all?: true
 }
 
@@ -217,6 +223,7 @@ export type CvGroupByOutputType = {
   createdAt: Date
   updatedAt: Date
   lastEditedAt: Date
+  deletedAt: Date | null
   _count: CvCountAggregateOutputType | null
   _avg: CvAvgAggregateOutputType | null
   _sum: CvSumAggregateOutputType | null
@@ -224,7 +231,7 @@ export type CvGroupByOutputType = {
   _max: CvMaxAggregateOutputType | null
 }
 
-type GetCvGroupByPayload<T extends CvGroupByArgs> = Prisma.PrismaPromise<
+export type GetCvGroupByPayload<T extends CvGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<CvGroupByOutputType, T['by']> &
       {
@@ -252,6 +259,7 @@ export type CvWhereInput = {
   createdAt?: Prisma.DateTimeFilter<"Cv"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Cv"> | Date | string
   lastEditedAt?: Prisma.DateTimeFilter<"Cv"> | Date | string
+  deletedAt?: Prisma.DateTimeNullableFilter<"Cv"> | Date | string | null
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   template?: Prisma.XOR<Prisma.CvTemplateScalarRelationFilter, Prisma.CvTemplateWhereInput>
 }
@@ -266,6 +274,7 @@ export type CvOrderByWithRelationInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   lastEditedAt?: Prisma.SortOrder
+  deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   user?: Prisma.UserOrderByWithRelationInput
   template?: Prisma.CvTemplateOrderByWithRelationInput
   _relevance?: Prisma.CvOrderByRelevanceInput
@@ -284,6 +293,7 @@ export type CvWhereUniqueInput = Prisma.AtLeast<{
   createdAt?: Prisma.DateTimeFilter<"Cv"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Cv"> | Date | string
   lastEditedAt?: Prisma.DateTimeFilter<"Cv"> | Date | string
+  deletedAt?: Prisma.DateTimeNullableFilter<"Cv"> | Date | string | null
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   template?: Prisma.XOR<Prisma.CvTemplateScalarRelationFilter, Prisma.CvTemplateWhereInput>
 }, "id">
@@ -298,6 +308,7 @@ export type CvOrderByWithAggregationInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   lastEditedAt?: Prisma.SortOrder
+  deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.CvCountOrderByAggregateInput
   _avg?: Prisma.CvAvgOrderByAggregateInput
   _max?: Prisma.CvMaxOrderByAggregateInput
@@ -318,6 +329,7 @@ export type CvScalarWhereWithAggregatesInput = {
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Cv"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Cv"> | Date | string
   lastEditedAt?: Prisma.DateTimeWithAggregatesFilter<"Cv"> | Date | string
+  deletedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Cv"> | Date | string | null
 }
 
 export type CvCreateInput = {
@@ -327,6 +339,7 @@ export type CvCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   lastEditedAt?: Date | string
+  deletedAt?: Date | string | null
   user: Prisma.UserCreateNestedOneWithoutCvsInput
   template: Prisma.CvTemplateCreateNestedOneWithoutCvsInput
 }
@@ -341,6 +354,7 @@ export type CvUncheckedCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   lastEditedAt?: Date | string
+  deletedAt?: Date | string | null
 }
 
 export type CvUpdateInput = {
@@ -350,6 +364,7 @@ export type CvUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   lastEditedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   user?: Prisma.UserUpdateOneRequiredWithoutCvsNestedInput
   template?: Prisma.CvTemplateUpdateOneRequiredWithoutCvsNestedInput
 }
@@ -364,6 +379,7 @@ export type CvUncheckedUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   lastEditedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type CvCreateManyInput = {
@@ -376,6 +392,7 @@ export type CvCreateManyInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   lastEditedAt?: Date | string
+  deletedAt?: Date | string | null
 }
 
 export type CvUpdateManyMutationInput = {
@@ -385,6 +402,7 @@ export type CvUpdateManyMutationInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   lastEditedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type CvUncheckedUpdateManyInput = {
@@ -397,6 +415,7 @@ export type CvUncheckedUpdateManyInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   lastEditedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type CvOrderByRelevanceInput = {
@@ -415,6 +434,7 @@ export type CvCountOrderByAggregateInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   lastEditedAt?: Prisma.SortOrder
+  deletedAt?: Prisma.SortOrder
 }
 
 export type CvAvgOrderByAggregateInput = {
@@ -432,6 +452,7 @@ export type CvMaxOrderByAggregateInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   lastEditedAt?: Prisma.SortOrder
+  deletedAt?: Prisma.SortOrder
 }
 
 export type CvMinOrderByAggregateInput = {
@@ -443,6 +464,7 @@ export type CvMinOrderByAggregateInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   lastEditedAt?: Prisma.SortOrder
+  deletedAt?: Prisma.SortOrder
 }
 
 export type CvSumOrderByAggregateInput = {
@@ -556,6 +578,7 @@ export type CvCreateWithoutTemplateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   lastEditedAt?: Date | string
+  deletedAt?: Date | string | null
   user: Prisma.UserCreateNestedOneWithoutCvsInput
 }
 
@@ -568,6 +591,7 @@ export type CvUncheckedCreateWithoutTemplateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   lastEditedAt?: Date | string
+  deletedAt?: Date | string | null
 }
 
 export type CvCreateOrConnectWithoutTemplateInput = {
@@ -609,6 +633,7 @@ export type CvScalarWhereInput = {
   createdAt?: Prisma.DateTimeFilter<"Cv"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Cv"> | Date | string
   lastEditedAt?: Prisma.DateTimeFilter<"Cv"> | Date | string
+  deletedAt?: Prisma.DateTimeNullableFilter<"Cv"> | Date | string | null
 }
 
 export type CvCreateWithoutUserInput = {
@@ -618,6 +643,7 @@ export type CvCreateWithoutUserInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   lastEditedAt?: Date | string
+  deletedAt?: Date | string | null
   template: Prisma.CvTemplateCreateNestedOneWithoutCvsInput
 }
 
@@ -630,6 +656,7 @@ export type CvUncheckedCreateWithoutUserInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   lastEditedAt?: Date | string
+  deletedAt?: Date | string | null
 }
 
 export type CvCreateOrConnectWithoutUserInput = {
@@ -667,6 +694,7 @@ export type CvCreateManyTemplateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   lastEditedAt?: Date | string
+  deletedAt?: Date | string | null
 }
 
 export type CvUpdateWithoutTemplateInput = {
@@ -676,6 +704,7 @@ export type CvUpdateWithoutTemplateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   lastEditedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   user?: Prisma.UserUpdateOneRequiredWithoutCvsNestedInput
 }
 
@@ -688,6 +717,7 @@ export type CvUncheckedUpdateWithoutTemplateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   lastEditedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type CvUncheckedUpdateManyWithoutTemplateInput = {
@@ -699,6 +729,7 @@ export type CvUncheckedUpdateManyWithoutTemplateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   lastEditedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type CvCreateManyUserInput = {
@@ -710,6 +741,7 @@ export type CvCreateManyUserInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   lastEditedAt?: Date | string
+  deletedAt?: Date | string | null
 }
 
 export type CvUpdateWithoutUserInput = {
@@ -719,6 +751,7 @@ export type CvUpdateWithoutUserInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   lastEditedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   template?: Prisma.CvTemplateUpdateOneRequiredWithoutCvsNestedInput
 }
 
@@ -731,6 +764,7 @@ export type CvUncheckedUpdateWithoutUserInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   lastEditedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type CvUncheckedUpdateManyWithoutUserInput = {
@@ -742,6 +776,7 @@ export type CvUncheckedUpdateManyWithoutUserInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   lastEditedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 
@@ -756,6 +791,7 @@ export type CvSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = run
   createdAt?: boolean
   updatedAt?: boolean
   lastEditedAt?: boolean
+  deletedAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   template?: boolean | Prisma.CvTemplateDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["cv"]>
@@ -772,9 +808,10 @@ export type CvSelectScalar = {
   createdAt?: boolean
   updatedAt?: boolean
   lastEditedAt?: boolean
+  deletedAt?: boolean
 }
 
-export type CvOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "templateId" | "title" | "status" | "content" | "createdAt" | "updatedAt" | "lastEditedAt", ExtArgs["result"]["cv"]>
+export type CvOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "templateId" | "title" | "status" | "content" | "createdAt" | "updatedAt" | "lastEditedAt" | "deletedAt", ExtArgs["result"]["cv"]>
 export type CvInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   template?: boolean | Prisma.CvTemplateDefaultArgs<ExtArgs>
@@ -796,6 +833,7 @@ export type $CvPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
     createdAt: Date
     updatedAt: Date
     lastEditedAt: Date
+    deletedAt: Date | null
   }, ExtArgs["result"]["cv"]>
   composites: {}
 }
@@ -1176,6 +1214,7 @@ export interface CvFieldRefs {
   readonly createdAt: Prisma.FieldRef<"Cv", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Cv", 'DateTime'>
   readonly lastEditedAt: Prisma.FieldRef<"Cv", 'DateTime'>
+  readonly deletedAt: Prisma.FieldRef<"Cv", 'DateTime'>
 }
     
 

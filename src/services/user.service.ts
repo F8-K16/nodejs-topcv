@@ -115,7 +115,9 @@ export const userService = {
 
     if (!user) return null;
 
-    const { password, userPhone, candidate, ...rest } = user;
+    const { password, totpSecret, userPhone, candidate, ...rest } = user;
+    void password;
+    void totpSecret;
     return {
       ...rest,
       phone: userPhone?.phone || null,
@@ -329,10 +331,37 @@ export const userService = {
     };
   },
 
+  syntheticGooglePhones(googleSub: string, email: string) {
+    const phones: string[] = [];
+    for (let i = 0; i < 8; i++) {
+      const slice = createHash("sha256")
+        .update(`${googleSub}:${email}:${i}`)
+        .digest("hex");
+      phones.push(`09${slice.slice(0, 8)}`);
+    }
+    return phones;
+  },
+
+  async clearSyntheticGooglePhone(
+    userId: number,
+    email: string,
+    googleSub: string,
+  ) {
+    const row = await prisma.userPhone.findUnique({ where: { userId } });
+    if (!row) return false;
+    if (!this.syntheticGooglePhones(googleSub, email).includes(row.phone)) {
+      return false;
+    }
+    await prisma.userPhone.delete({ where: { userId } });
+    await invalidateUserAuthDataCache(userId);
+    return true;
+  },
+
   async createGoogleUser(params: {
     email: string;
     nameHint: string;
     googleSub: string;
+    avatar?: string | null;
   }) {
     const candidateRole = await prisma.role.findFirst({
       where: { name: "CANDIDATE" },
@@ -342,12 +371,7 @@ export const userService = {
     }
 
     const buildUsernameBase = () => {
-      const fromName = params.nameHint
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .replace(/[^a-zA-Z0-9_]/g, "_")
-        .replace(/_+/g, "_")
-        .replace(/^_|_$/g, "");
+      const fromName = params.nameHint.replace(/\s+/g, " ").trim();
       if (fromName.length > 0) return fromName.slice(0, 30);
       const fromEmail = params.email.split("@")[0] ?? "user";
       const clean = fromEmail.replace(/[^a-zA-Z0-9_]/g, "_").slice(0, 24);
@@ -355,24 +379,6 @@ export const userService = {
     };
 
     const randomPassword = hashPassword(randomBytes(48).toString("hex"));
-
-    const makeUniquePhone = async (): Promise<string> => {
-      for (let i = 0; i < 8; i++) {
-        const slice = createHash("sha256")
-          .update(`${params.googleSub}:${params.email}:${i}`)
-          .digest("hex");
-        const phone = `09${slice.slice(0, 8)}`;
-        const taken = await prisma.userPhone.findUnique({ where: { phone } });
-        if (!taken) return phone;
-      }
-      throw new HttpException(
-        "Không tạo được tài khoản (SĐT tạm trùng)",
-        500,
-        "OAUTH_PHONE_CONFLICT",
-      );
-    };
-
-    const phone = await makeUniquePhone();
 
     let baseUsername = buildUsernameBase();
     if (!baseUsername) baseUsername = "user";
@@ -394,9 +400,7 @@ export const userService = {
           username,
           password: randomPassword,
           isVerified: true,
-          userPhone: {
-            create: { phone },
-          },
+          ...(params.avatar ? { avatar: params.avatar } : {}),
         },
         select: {
           id: true,

@@ -6,7 +6,11 @@ import jobRoute from "./job.route";
 import employerPortalRoute from "./employer_portal.route";
 import cvRoute from "./cv.route";
 
-import { authMiddleware, requireRole } from "../middlewares/auth.middleware";
+import {
+  authMiddleware,
+  requireAdminTotp,
+  requireRole,
+} from "../middlewares/auth.middleware";
 import { homeController } from "../controllers/home.controller";
 import { locationController } from "../controllers/location.controller";
 import { categoryController } from "../controllers/category.controller";
@@ -23,7 +27,16 @@ import {
   aiCvReviewJobSchema,
   aiJobQuestionsSchema,
 } from "../schemas/ai.schema";
-import { aiRateLimiter } from "../middlewares/rateLimit.middleware";
+import {
+  aiRateLimiter,
+  contactRateLimiter,
+  publicCatalogRateLimiter,
+} from "../middlewares/rateLimit.middleware";
+import { docsController } from "../controllers/docs.controller";
+import { insightController } from "../controllers/insight.controller";
+import { blogController } from "../controllers/blog.controller";
+import { contactController } from "../controllers/contact.controller";
+import { contactMessageSchema } from "../schemas/blog.schema";
 
 const router = express.Router();
 router.get("/health", healthController.live);
@@ -32,6 +45,7 @@ router.use(
   "/admin",
   authMiddleware,
   requireRole("ADMIN", "MODERATOR", "SUPPORT"),
+  requireAdminTotp,
   adminRoute,
 );
 router.use(
@@ -47,8 +61,31 @@ router.use("/chat", chatRoute);
 router.use(cvRoute);
 
 // Public
+router.get("/openapi.json", docsController.openapi);
+router.use("/docs", docsController.ui);
 router.get("/metadata", homeController.metadata);
 router.get("/skills", homeController.listSkillsPublic);
+router.get(
+  "/insights/salary",
+  publicCatalogRateLimiter,
+  insightController.salary,
+);
+router.get(
+  "/blog-posts",
+  publicCatalogRateLimiter,
+  blogController.listPublic,
+);
+router.get(
+  "/blog-posts/:slug",
+  publicCatalogRateLimiter,
+  blogController.showPublic,
+);
+router.post(
+  "/contact",
+  contactRateLimiter,
+  validate(contactMessageSchema),
+  contactController.submit,
+);
 
 router.get(
   "/me/recommendation-profile",
@@ -100,8 +137,12 @@ router.post(
   aiController.cvReviewJob,
 );
 
-router.get("/companies", homeController.getCompanies);
-router.get("/companies/top-hiring", homeController.getTopHiringCompanies);
+router.get("/companies", publicCatalogRateLimiter, homeController.getCompanies);
+router.get(
+  "/companies/top-hiring",
+  publicCatalogRateLimiter,
+  homeController.getTopHiringCompanies,
+);
 router.get(
   "/companies/followed",
   authMiddleware,
@@ -126,7 +167,11 @@ router.delete(
   requireRole("CANDIDATE"),
   companyFollowController.unfollow,
 );
-router.get("/companies/:id", homeController.getCompanyDetail);
+router.get(
+  "/companies/:id",
+  publicCatalogRateLimiter,
+  homeController.getCompanyDetail,
+);
 
 router.get("/company/:id/categories", categoryController.getByCompany);
 router.get("/provinces", locationController.province);

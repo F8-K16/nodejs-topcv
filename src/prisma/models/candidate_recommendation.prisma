@@ -11,8 +11,8 @@ model CandidatePreference {
   createdAt           DateTime         @default(now()) @db.Timestamp(0)
   updatedAt           DateTime         @updatedAt @db.Timestamp(0)
   candidate           Candidate        @relation(fields: [candidateId], references: [id], onDelete: Cascade)
-  preferredDistrict   District?        @relation("CandidatePrefDistrict", fields: [preferredDistrictId], references: [id])
-  preferredProvince   Province?        @relation("CandidatePrefProvince", fields: [preferredProvinceId], references: [id])
+  preferredDistrict   District?        @relation("CandidatePrefDistrict", fields: [preferredDistrictId], references: [id], onDelete: SetNull)
+  preferredProvince   Province?        @relation("CandidatePrefProvince", fields: [preferredProvinceId], references: [id], onDelete: SetNull)
 
   @@index([preferredProvinceId])
   @@index([preferredDistrictId])

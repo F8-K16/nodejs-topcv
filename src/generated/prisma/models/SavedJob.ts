@@ -27,33 +27,28 @@ export type AggregateSavedJob = {
 }
 
 export type SavedJobAvgAggregateOutputType = {
-  id: number | null
   candidateId: number | null
   jobId: number | null
 }
 
 export type SavedJobSumAggregateOutputType = {
-  id: number | null
   candidateId: number | null
   jobId: number | null
 }
 
 export type SavedJobMinAggregateOutputType = {
-  id: number | null
   candidateId: number | null
   jobId: number | null
   createdAt: Date | null
 }
 
 export type SavedJobMaxAggregateOutputType = {
-  id: number | null
   candidateId: number | null
   jobId: number | null
   createdAt: Date | null
 }
 
 export type SavedJobCountAggregateOutputType = {
-  id: number
   candidateId: number
   jobId: number
   createdAt: number
@@ -62,33 +57,28 @@ export type SavedJobCountAggregateOutputType = {
 
 
 export type SavedJobAvgAggregateInputType = {
-  id?: true
   candidateId?: true
   jobId?: true
 }
 
 export type SavedJobSumAggregateInputType = {
-  id?: true
   candidateId?: true
   jobId?: true
 }
 
 export type SavedJobMinAggregateInputType = {
-  id?: true
   candidateId?: true
   jobId?: true
   createdAt?: true
 }
 
 export type SavedJobMaxAggregateInputType = {
-  id?: true
   candidateId?: true
   jobId?: true
   createdAt?: true
 }
 
 export type SavedJobCountAggregateInputType = {
-  id?: true
   candidateId?: true
   jobId?: true
   createdAt?: true
@@ -182,7 +172,6 @@ export type SavedJobGroupByArgs<ExtArgs extends runtime.Types.Extensions.Interna
 }
 
 export type SavedJobGroupByOutputType = {
-  id: number
   candidateId: number
   jobId: number
   createdAt: Date
@@ -193,7 +182,7 @@ export type SavedJobGroupByOutputType = {
   _max: SavedJobMaxAggregateOutputType | null
 }
 
-type GetSavedJobGroupByPayload<T extends SavedJobGroupByArgs> = Prisma.PrismaPromise<
+export type GetSavedJobGroupByPayload<T extends SavedJobGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<SavedJobGroupByOutputType, T['by']> &
       {
@@ -212,7 +201,6 @@ export type SavedJobWhereInput = {
   AND?: Prisma.SavedJobWhereInput | Prisma.SavedJobWhereInput[]
   OR?: Prisma.SavedJobWhereInput[]
   NOT?: Prisma.SavedJobWhereInput | Prisma.SavedJobWhereInput[]
-  id?: Prisma.IntFilter<"SavedJob"> | number
   candidateId?: Prisma.IntFilter<"SavedJob"> | number
   jobId?: Prisma.IntFilter<"SavedJob"> | number
   createdAt?: Prisma.DateTimeFilter<"SavedJob"> | Date | string
@@ -221,7 +209,6 @@ export type SavedJobWhereInput = {
 }
 
 export type SavedJobOrderByWithRelationInput = {
-  id?: Prisma.SortOrder
   candidateId?: Prisma.SortOrder
   jobId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -230,7 +217,6 @@ export type SavedJobOrderByWithRelationInput = {
 }
 
 export type SavedJobWhereUniqueInput = Prisma.AtLeast<{
-  id?: number
   candidateId_jobId?: Prisma.SavedJobCandidateIdJobIdCompoundUniqueInput
   AND?: Prisma.SavedJobWhereInput | Prisma.SavedJobWhereInput[]
   OR?: Prisma.SavedJobWhereInput[]
@@ -240,10 +226,9 @@ export type SavedJobWhereUniqueInput = Prisma.AtLeast<{
   createdAt?: Prisma.DateTimeFilter<"SavedJob"> | Date | string
   candidate?: Prisma.XOR<Prisma.CandidateScalarRelationFilter, Prisma.CandidateWhereInput>
   job?: Prisma.XOR<Prisma.JobScalarRelationFilter, Prisma.JobWhereInput>
-}, "id" | "candidateId_jobId">
+}, "candidateId_jobId">
 
 export type SavedJobOrderByWithAggregationInput = {
-  id?: Prisma.SortOrder
   candidateId?: Prisma.SortOrder
   jobId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -258,7 +243,6 @@ export type SavedJobScalarWhereWithAggregatesInput = {
   AND?: Prisma.SavedJobScalarWhereWithAggregatesInput | Prisma.SavedJobScalarWhereWithAggregatesInput[]
   OR?: Prisma.SavedJobScalarWhereWithAggregatesInput[]
   NOT?: Prisma.SavedJobScalarWhereWithAggregatesInput | Prisma.SavedJobScalarWhereWithAggregatesInput[]
-  id?: Prisma.IntWithAggregatesFilter<"SavedJob"> | number
   candidateId?: Prisma.IntWithAggregatesFilter<"SavedJob"> | number
   jobId?: Prisma.IntWithAggregatesFilter<"SavedJob"> | number
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"SavedJob"> | Date | string
@@ -271,7 +255,6 @@ export type SavedJobCreateInput = {
 }
 
 export type SavedJobUncheckedCreateInput = {
-  id?: number
   candidateId: number
   jobId: number
   createdAt?: Date | string
@@ -284,14 +267,12 @@ export type SavedJobUpdateInput = {
 }
 
 export type SavedJobUncheckedUpdateInput = {
-  id?: Prisma.IntFieldUpdateOperationsInput | number
   candidateId?: Prisma.IntFieldUpdateOperationsInput | number
   jobId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type SavedJobCreateManyInput = {
-  id?: number
   candidateId: number
   jobId: number
   createdAt?: Date | string
@@ -302,7 +283,6 @@ export type SavedJobUpdateManyMutationInput = {
 }
 
 export type SavedJobUncheckedUpdateManyInput = {
-  id?: Prisma.IntFieldUpdateOperationsInput | number
   candidateId?: Prisma.IntFieldUpdateOperationsInput | number
   jobId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -324,34 +304,29 @@ export type SavedJobCandidateIdJobIdCompoundUniqueInput = {
 }
 
 export type SavedJobCountOrderByAggregateInput = {
-  id?: Prisma.SortOrder
   candidateId?: Prisma.SortOrder
   jobId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
 export type SavedJobAvgOrderByAggregateInput = {
-  id?: Prisma.SortOrder
   candidateId?: Prisma.SortOrder
   jobId?: Prisma.SortOrder
 }
 
 export type SavedJobMaxOrderByAggregateInput = {
-  id?: Prisma.SortOrder
   candidateId?: Prisma.SortOrder
   jobId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
 export type SavedJobMinOrderByAggregateInput = {
-  id?: Prisma.SortOrder
   candidateId?: Prisma.SortOrder
   jobId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
 export type SavedJobSumOrderByAggregateInput = {
-  id?: Prisma.SortOrder
   candidateId?: Prisma.SortOrder
   jobId?: Prisma.SortOrder
 }
@@ -446,7 +421,6 @@ export type SavedJobCreateWithoutCandidateInput = {
 }
 
 export type SavedJobUncheckedCreateWithoutCandidateInput = {
-  id?: number
   jobId: number
   createdAt?: Date | string
 }
@@ -481,7 +455,6 @@ export type SavedJobScalarWhereInput = {
   AND?: Prisma.SavedJobScalarWhereInput | Prisma.SavedJobScalarWhereInput[]
   OR?: Prisma.SavedJobScalarWhereInput[]
   NOT?: Prisma.SavedJobScalarWhereInput | Prisma.SavedJobScalarWhereInput[]
-  id?: Prisma.IntFilter<"SavedJob"> | number
   candidateId?: Prisma.IntFilter<"SavedJob"> | number
   jobId?: Prisma.IntFilter<"SavedJob"> | number
   createdAt?: Prisma.DateTimeFilter<"SavedJob"> | Date | string
@@ -493,7 +466,6 @@ export type SavedJobCreateWithoutJobInput = {
 }
 
 export type SavedJobUncheckedCreateWithoutJobInput = {
-  id?: number
   candidateId: number
   createdAt?: Date | string
 }
@@ -525,7 +497,6 @@ export type SavedJobUpdateManyWithWhereWithoutJobInput = {
 }
 
 export type SavedJobCreateManyCandidateInput = {
-  id?: number
   jobId: number
   createdAt?: Date | string
 }
@@ -536,19 +507,16 @@ export type SavedJobUpdateWithoutCandidateInput = {
 }
 
 export type SavedJobUncheckedUpdateWithoutCandidateInput = {
-  id?: Prisma.IntFieldUpdateOperationsInput | number
   jobId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type SavedJobUncheckedUpdateManyWithoutCandidateInput = {
-  id?: Prisma.IntFieldUpdateOperationsInput | number
   jobId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type SavedJobCreateManyJobInput = {
-  id?: number
   candidateId: number
   createdAt?: Date | string
 }
@@ -559,13 +527,11 @@ export type SavedJobUpdateWithoutJobInput = {
 }
 
 export type SavedJobUncheckedUpdateWithoutJobInput = {
-  id?: Prisma.IntFieldUpdateOperationsInput | number
   candidateId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type SavedJobUncheckedUpdateManyWithoutJobInput = {
-  id?: Prisma.IntFieldUpdateOperationsInput | number
   candidateId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -573,7 +539,6 @@ export type SavedJobUncheckedUpdateManyWithoutJobInput = {
 
 
 export type SavedJobSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
-  id?: boolean
   candidateId?: boolean
   jobId?: boolean
   createdAt?: boolean
@@ -584,13 +549,12 @@ export type SavedJobSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
 
 
 export type SavedJobSelectScalar = {
-  id?: boolean
   candidateId?: boolean
   jobId?: boolean
   createdAt?: boolean
 }
 
-export type SavedJobOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "candidateId" | "jobId" | "createdAt", ExtArgs["result"]["savedJob"]>
+export type SavedJobOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"candidateId" | "jobId" | "createdAt", ExtArgs["result"]["savedJob"]>
 export type SavedJobInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   candidate?: boolean | Prisma.CandidateDefaultArgs<ExtArgs>
   job?: boolean | Prisma.JobDefaultArgs<ExtArgs>
@@ -603,7 +567,6 @@ export type $SavedJobPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     job: Prisma.$JobPayload<ExtArgs>
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
-    id: number
     candidateId: number
     jobId: number
     createdAt: Date
@@ -690,8 +653,8 @@ export interface SavedJobDelegate<ExtArgs extends runtime.Types.Extensions.Inter
    * // Get first 10 SavedJobs
    * const savedJobs = await prisma.savedJob.findMany({ take: 10 })
    * 
-   * // Only select the `id`
-   * const savedJobWithIdOnly = await prisma.savedJob.findMany({ select: { id: true } })
+   * // Only select the `candidateId`
+   * const savedJobWithCandidateIdOnly = await prisma.savedJob.findMany({ select: { candidateId: true } })
    * 
    */
   findMany<T extends SavedJobFindManyArgs>(args?: Prisma.SelectSubset<T, SavedJobFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SavedJobPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
@@ -978,7 +941,6 @@ export interface Prisma__SavedJobClient<T, Null = never, ExtArgs extends runtime
  * Fields of the SavedJob model
  */
 export interface SavedJobFieldRefs {
-  readonly id: Prisma.FieldRef<"SavedJob", 'Int'>
   readonly candidateId: Prisma.FieldRef<"SavedJob", 'Int'>
   readonly jobId: Prisma.FieldRef<"SavedJob", 'Int'>
   readonly createdAt: Prisma.FieldRef<"SavedJob", 'DateTime'>

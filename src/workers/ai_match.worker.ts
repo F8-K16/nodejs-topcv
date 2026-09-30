@@ -3,6 +3,7 @@ import { Job } from "bullmq";
 import { prisma } from "../utils/prisma";
 import { createWorkerWithHandlers } from "./factory.worker";
 import { aiService } from "../services/ai.service";
+import { invalidateCandidateApplicationCaches } from "../utils/cache";
 
 const handlers = {
   "score-application": async (job: Job) => {
@@ -31,6 +32,7 @@ const handlers = {
         aiMatchUpdatedAt: new Date(),
       },
     });
+    await invalidateCandidateApplicationCaches(row.candidate.userId);
 
     try {
       const out = await aiService.scoreCvMatch(row.candidate.userId, {
@@ -54,6 +56,7 @@ const handlers = {
           aiMatchUpdatedAt: new Date(),
         },
       });
+      await invalidateCandidateApplicationCaches(row.candidate.userId);
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       await prisma.application.update({
@@ -64,6 +67,7 @@ const handlers = {
           aiMatchUpdatedAt: new Date(),
         },
       });
+      await invalidateCandidateApplicationCaches(row.candidate.userId);
       throw e;
     }
   },

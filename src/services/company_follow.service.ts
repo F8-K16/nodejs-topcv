@@ -41,7 +41,7 @@ export const companyFollowService = {
         },
       },
     });
-    if (existing) return { following: true, id: existing.id };
+    if (existing) return { following: true };
 
     await prisma.companyFollow.create({
       data: {

@@ -13,6 +13,7 @@ export const CacheKeys = {
   siteSettings: `${PREFIX}v1:site:settings:1`,
   skillsSelect: `${PREFIX}v1:admin:skills:select`,
   skillsList: (hash: string) => `${PREFIX}v1:admin:skills:list:${hash}`,
+  salaryInsights: (by: string) => `${PREFIX}v1:insights:salary:${by}`,
   jobsPublic: (surfaceVersion: string, hash: string) =>
     `${PREFIX}v1:jobs:public:${surfaceVersion}:${hash}`,
   publicMetadata: `${PREFIX}v1:public:metadata`,
@@ -26,7 +27,7 @@ export const CacheKeys = {
   topHiring: (surfaceVersion: string, limit: number) =>
     `${PREFIX}v1:companies:top-hiring:${surfaceVersion}:${limit}`,
   jobPublicDetail: (surfaceVersion: string, id: number) =>
-    `${PREFIX}v3:jobs:public:detail:${surfaceVersion}:${id}`,
+    `${PREFIX}v4:jobs:public:detail:${surfaceVersion}:${id}`,
   jobPublicDetailLegacy: (id: number) => `${PREFIX}v2:jobs:public:detail:${id}`,
   jobsRecommended: (userId: number, queryHash: string) =>
     `${PREFIX}v1:jobs:recommended:${userId}:${queryHash}`,
@@ -53,10 +54,23 @@ export const CacheKeys = {
     `${PREFIX}v1:ai:resume:pdf-extract:${candidateId}:${resumeId}:${versionHash}`,
   aiJobsRerank: (userId: number, hash: string) =>
     `${PREFIX}v1:ai:jobs:rerank:${userId}:${hash}`,
+  blogPublicList: (hash: string) => `${PREFIX}v1:blog:public:list:${hash}`,
+  blogPublicDetail: (slug: string) =>
+    `${PREFIX}v1:blog:public:detail:${encodeURIComponent(slug)}`,
+  blogAdminList: (hash: string) => `${PREFIX}v1:blog:admin:list:${hash}`,
+  blogAdminDetail: (id: number) => `${PREFIX}v1:blog:admin:detail:${id}`,
+  contactAdminList: (hash: string) => `${PREFIX}v1:contact:admin:list:${hash}`,
+  candidateApplications: (userId: number) =>
+    `${PREFIX}v1:candidate:${userId}:applications`,
+  candidateAppliedJobIds: (userId: number) =>
+    `${PREFIX}v1:candidate:${userId}:applied-job-ids`,
 } as const;
 
 const skillsListPattern = `${PREFIX}v1:admin:skills:list:*`;
 const locationDistrictsPattern = `${PREFIX}v1:location:districts:*`;
+const blogPublicListPattern = `${PREFIX}v1:blog:public:list:*`;
+const blogAdminListPattern = `${PREFIX}v1:blog:admin:list:*`;
+const contactAdminListPattern = `${PREFIX}v1:contact:admin:list:*`;
 
 export function authUserCacheKey(userId: number): string {
   return `${PREFIX}v1:auth:user:${userId}`;
@@ -520,6 +534,39 @@ export async function invalidateSkillCaches(): Promise<void> {
     cacheDel(CacheKeys.skillsSelect),
     cacheDel(CacheKeys.adminDashboardSummary),
     bumpPublicSurfaceVersion(),
+  ]);
+}
+
+export async function invalidateBlogCaches(opts?: {
+  slugs?: string[];
+  postId?: number;
+}): Promise<void> {
+  const tasks: Promise<void>[] = [
+    cacheDelPattern(blogPublicListPattern),
+    cacheDelPattern(blogAdminListPattern),
+  ];
+  for (const slug of opts?.slugs ?? []) {
+    const trimmed = slug.trim();
+    if (trimmed) tasks.push(cacheDel(CacheKeys.blogPublicDetail(trimmed)));
+  }
+  if (opts?.postId != null && Number.isFinite(opts.postId)) {
+    tasks.push(cacheDel(CacheKeys.blogAdminDetail(Math.trunc(opts.postId))));
+  }
+  await Promise.all(tasks);
+}
+
+export async function invalidateContactAdminCaches(): Promise<void> {
+  await cacheDelPattern(contactAdminListPattern);
+}
+
+export async function invalidateCandidateApplicationCaches(
+  userId: number,
+): Promise<void> {
+  if (!Number.isFinite(userId) || userId <= 0) return;
+  const id = Math.trunc(userId);
+  await Promise.all([
+    cacheDel(CacheKeys.candidateApplications(id)),
+    cacheDel(CacheKeys.candidateAppliedJobIds(id)),
   ]);
 }
 

@@ -17,6 +17,7 @@ import { initRedis } from "./utils/redis";
 import { prisma } from "./utils/prisma";
 import { logger } from "./utils/logger";
 import { initSocketIo } from "./socket/chat.socket";
+import { ensureAdminRoutePermissions } from "./services/admin-permission-sync.service";
 import { sendError } from "./utils/response";
 
 const PORT = env.PORT || 3000;
@@ -67,6 +68,11 @@ app.use(errorHandlingMiddleware);
 const startServer = async () => {
   await prisma.$connect();
   await initRedis();
+  try {
+    await ensureAdminRoutePermissions();
+  } catch (error) {
+    logger.error("Failed to sync admin route permissions", { error });
+  }
 
   const httpServer = http.createServer(app);
   initSocketIo(httpServer, allowedOrigins);

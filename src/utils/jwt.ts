@@ -46,3 +46,25 @@ export const verifyRefreshToken = (token: string) => {
 export const decodeToken = (token: string) => {
   return jsonwebtoken.decode(token);
 };
+
+export const createTwoFactorChallengeToken = (userId: number) => {
+  return jsonwebtoken.sign(
+    { id: userId, purpose: "admin_2fa" },
+    JWT_ACCESS_SECRET,
+    { expiresIn: "5m" },
+  );
+};
+
+export const verifyTwoFactorChallengeToken = (token: string) => {
+  try {
+    const decoded = jsonwebtoken.verify(token, JWT_ACCESS_SECRET);
+    if (typeof decoded === "string" || decoded.purpose !== "admin_2fa") {
+      return null;
+    }
+    const id = Number(decoded.id);
+    if (!Number.isInteger(id) || id <= 0) return null;
+    return { id };
+  } catch {
+    return null;
+  }
+};

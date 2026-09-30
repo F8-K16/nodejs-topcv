@@ -18,6 +18,7 @@ export async function resolveResumePreviewForEmployer(
         id: cvId,
         userId: candidateUserId,
         status: "COMPLETED",
+        deletedAt: null,
       },
       include: { template: true },
     });

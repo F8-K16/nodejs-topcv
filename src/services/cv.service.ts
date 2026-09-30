@@ -10,7 +10,7 @@ import { prisma } from "../utils/prisma";
 import {
   CacheKeys,
   cacheGetJson,
-  cacheSetJsonPersistent,
+  cacheSetJson,
   invalidateCvTemplateCaches,
 } from "../utils/cache";
 
@@ -27,6 +27,7 @@ type TemplateSection = {
   bindingPath: string;
   itemBlocks?: TemplateBlock[];
   defaultItem?: Record<string, string>;
+  sampleItems?: Record<string, string>[];
 };
 
 type TemplateData = {
@@ -127,6 +128,14 @@ export const buildDefaultContentFromTemplate = (
   }
 
   for (const section of safeTemplateData.sections ?? []) {
+    if (Array.isArray(section.sampleItems) && section.sampleItems.length > 0) {
+      setByPath(
+        content,
+        section.bindingPath,
+        section.sampleItems.map((item) => ({ ...item })),
+      );
+      continue;
+    }
     if (section.defaultItem && Object.keys(section.defaultItem).length > 0) {
       setByPath(content, section.bindingPath, [{ ...section.defaultItem }]);
       continue;
@@ -157,7 +166,7 @@ export const cvService = {
       where: { deletedAt: null },
       orderBy: { updatedAt: "desc" },
     });
-    await cacheSetJsonPersistent(cacheKey, data);
+    await cacheSetJson(cacheKey, data, 3600);
     return data;
   },
 
@@ -169,7 +178,7 @@ export const cvService = {
     if (cached) return cached;
 
     const templates = await prisma.cvTemplate.findMany({
-      where: { isActive: true, deletedAt: null },
+      where: { status: true, deletedAt: null },
       orderBy: { id: "asc" },
       select: {
         id: true,
@@ -180,7 +189,7 @@ export const cvService = {
         updatedAt: true,
       },
     });
-    await cacheSetJsonPersistent(cacheKey, templates);
+    await cacheSetJson(cacheKey, templates, 3600);
     return templates;
   },
 
@@ -195,12 +204,12 @@ export const cvService = {
     if (cached) return cached;
 
     const template = await prisma.cvTemplate.findFirst({
-      where: { id, isActive: true, deletedAt: null },
+      where: { id, status: true, deletedAt: null },
     });
     if (!template) {
       throw new HttpException("Không tìm thấy mẫu CV", 404);
     }
-    await cacheSetJsonPersistent(cacheKey, template);
+    await cacheSetJson(cacheKey, template, 3600);
     return template;
   },
 
@@ -211,7 +220,7 @@ export const cvService = {
         description: input.description?.trim() || null,
         thumbnailUrl: input.thumbnailUrl?.trim() || null,
         templateData: input.templateData as unknown as Prisma.InputJsonValue,
-        isActive: input.isActive ?? true,
+        status: input.status ?? true,
       },
     });
     await invalidateCvTemplateCaches(created.id);
@@ -245,7 +254,7 @@ export const cvService = {
                 input.templateData as unknown as Prisma.InputJsonValue,
             }
           : {}),
-        ...(input.isActive !== undefined ? { isActive: input.isActive } : {}),
+        ...(input.status !== undefined ? { status: input.status } : {}),
       },
     });
     await invalidateCvTemplateCaches(updated.id);
@@ -258,7 +267,7 @@ export const cvService = {
     }
     const deleted = await prisma.cvTemplate.update({
       where: { id },
-      data: { deletedAt: new Date(), isActive: false },
+      data: { deletedAt: new Date(), status: false },
     });
     await invalidateCvTemplateCaches(id);
     return deleted;
@@ -270,7 +279,7 @@ export const cvService = {
     }
     const restored = await prisma.cvTemplate.update({
       where: { id },
-      data: { deletedAt: null, isActive: true },
+      data: { deletedAt: null, status: true },
     });
     await invalidateCvTemplateCaches(id);
     return restored;
@@ -302,7 +311,7 @@ export const cvService = {
 
   async listMyCvs(userId: number) {
     return prisma.cv.findMany({
-      where: { userId },
+      where: { userId, deletedAt: null },
       orderBy: { updatedAt: "desc" },
       select: {
         id: true,
@@ -326,7 +335,7 @@ export const cvService = {
       where: { id: cvId },
       include: { template: true },
     });
-    if (!cv || cv.userId !== userId) {
+    if (!cv || cv.userId !== userId || cv.deletedAt) {
       throw new HttpException("Không tìm thấy CV", 404);
     }
     return cv;
@@ -357,17 +366,23 @@ export const cvService = {
       select: { id: true },
     });
 
+    const deletedAt = new Date();
     if (candidate) {
       const publishedUrl = `${env.FRONTEND_URL.replace(/\/$/, "")}/resumes/shared/${existing.id}`;
-      await prisma.resume.deleteMany({
+      await prisma.resume.updateMany({
         where: {
           candidateId: candidate.id,
           fileUrl: publishedUrl,
+          deletedAt: null,
         },
+        data: { deletedAt },
       });
     }
 
-    await prisma.cv.delete({ where: { id: existing.id } });
+    await prisma.cv.update({
+      where: { id: existing.id },
+      data: { deletedAt },
+    });
     return { id: existing.id };
   },
 
@@ -381,7 +396,7 @@ export const cvService = {
         template: true,
       },
     });
-    if (!cv || cv.status !== "COMPLETED") {
+    if (!cv || cv.deletedAt || cv.status !== "COMPLETED") {
       throw new HttpException("Không tìm thấy CV", 404);
     }
     return cv;
@@ -444,13 +459,15 @@ export const cvService = {
   async purgeOldDraftCvs(days = 30) {
     const cutoffMs = Date.now() - days * 24 * 60 * 60 * 1000;
     const cutoff = new Date(cutoffMs);
-    const r = await prisma.cv.deleteMany({
+    const r = await prisma.cv.updateMany({
       where: {
         status: "DRAFT",
+        deletedAt: null,
         lastEditedAt: {
           lt: cutoff,
         },
       },
+      data: { deletedAt: new Date() },
     });
     return { deleted: r.count };
   },

@@ -7,7 +7,10 @@ import {
   JobType,
 } from "../../generated/prisma/client";
 import { hashPassword } from "../../utils/hashing";
+import { JOB_CATEGORY_CATALOG } from "./job-catalog";
+import { ensureAdminRoutePermissions } from "../../services/admin-permission-sync.service";
 import { prisma } from "../../utils/prisma";
+import { uniqueSlug } from "../../utils/slug";
 
 const ADMIN_EMAIL = "haovaf8@fullstack.edu.vn";
 const ADMIN_PASSWORD = "admin@2606";
@@ -60,129 +63,154 @@ const upsertUserPhone = async (userId: number, phone: string) => {
   });
 };
 
-const upsertCvTemplate = async () => {
-  const name = "Modern Professional";
-  const templateData = {
-    layout: "single-column",
-    meta: { theme: "green", variant: "classic", density: "comfortable" },
-    blocks: [
-      {
-        id: "full-name",
-        type: "text",
-        bindingPath: "profile.fullName",
-        defaultValue: "Nguyễn Văn A",
-      },
-      {
-        id: "title",
-        type: "text",
-        bindingPath: "profile.title",
-        defaultValue: "Frontend Developer",
-      },
-      {
-        id: "email",
-        type: "text",
-        bindingPath: "profile.email",
-        defaultValue: "nguyenvana@email.com",
-      },
-      {
-        id: "phone",
-        type: "text",
-        bindingPath: "profile.phone",
-        defaultValue: "090 123 4567",
-      },
-      {
-        id: "address",
-        type: "text",
-        bindingPath: "profile.address",
-        defaultValue: "TP. Hồ Chí Minh",
-      },
-      {
-        id: "website",
-        type: "text",
-        bindingPath: "profile.website",
-        defaultValue: "linkedin.com/in/nguyenvana",
-      },
-      {
-        id: "summary",
-        type: "multiline",
-        bindingPath: "summary.text",
-        defaultValue:
-          "Ứng viên công nghệ có kinh nghiệm xây dựng sản phẩm web, tối ưu trải nghiệm người dùng và phối hợp hiệu quả với đội ngũ sản phẩm.",
-      },
-    ],
-    sections: [
-      {
-        id: "experience",
-        label: "Kinh nghiệm",
-        bindingPath: "experience",
-        defaultItem: {
-          role: "Frontend Developer",
-          company: "TopCV Tech",
-          period: "2023 - Nay",
-          description:
-            "Phát triển giao diện tuyển dụng, cải thiện hiệu năng và xây dựng component dùng chung.",
-        },
-        itemBlocks: [
-          { id: "role", type: "text", bindingPath: "role" },
-          { id: "company", type: "text", bindingPath: "company" },
-          { id: "period", type: "text", bindingPath: "period" },
-          { id: "description", type: "multiline", bindingPath: "description" },
-        ],
-      },
-      {
-        id: "education",
-        label: "Học vấn",
-        bindingPath: "education",
-        defaultItem: {
-          major: "Công nghệ thông tin",
-          school: "Đại học Bách Khoa",
-          period: "2019 - 2023",
-          description: "Tập trung vào phát triển phần mềm và hệ thống web.",
-        },
-        itemBlocks: [
-          { id: "major", type: "text", bindingPath: "major" },
-          { id: "school", type: "text", bindingPath: "school" },
-          { id: "period", type: "text", bindingPath: "period" },
-          { id: "description", type: "multiline", bindingPath: "description" },
-        ],
-      },
-      {
-        id: "skills",
-        label: "Kỹ năng",
-        bindingPath: "skills",
-        defaultItem: { name: "React, Next.js, TypeScript" },
-        itemBlocks: [{ id: "name", type: "text", bindingPath: "name" }],
-      },
-    ],
-  };
-  const existing = await prisma.cvTemplate.findFirst({
-    where: { name },
-    select: { id: true },
-  });
+const cvProfileBlocks = [
+  { id: "full-name", type: "text", bindingPath: "profile.fullName", defaultValue: "Nguyễn Minh Anh" },
+  { id: "title", type: "text", bindingPath: "profile.title", defaultValue: "Lập trình viên Frontend" },
+  { id: "email", type: "text", bindingPath: "profile.email", defaultValue: "minh.anh@email.com" },
+  { id: "phone", type: "text", bindingPath: "profile.phone", defaultValue: "0901 234 567" },
+  { id: "address", type: "text", bindingPath: "profile.address", defaultValue: "Quận 1, TP. Hồ Chí Minh" },
+  { id: "website", type: "text", bindingPath: "profile.website", defaultValue: "github.com/minhanh" },
+  {
+    id: "summary",
+    type: "multiline",
+    bindingPath: "summary.text",
+    defaultValue:
+      "Lập trình viên frontend với 3 năm kinh nghiệm React và TypeScript. Tập trung vào giao diện rõ ràng, hiệu năng và trải nghiệm người dùng.",
+  },
+];
 
-  if (existing) {
-    return prisma.cvTemplate.update({
-      where: { id: existing.id },
-      data: {
-        description: "Mẫu CV chuyên nghiệp cho ứng viên công nghệ",
-        thumbnailUrl: "https://example.com/templates/modern-professional.png",
-        templateData,
-        isActive: true,
+const cvSections = [
+  {
+    id: "experience",
+    label: "Kinh nghiệm",
+    bindingPath: "experience",
+    defaultItem: {
+      role: "Frontend Developer",
+      company: "F8 Technology",
+      period: "2023 - Nay",
+      description: "Xây dựng giao diện tuyển dụng, tối ưu hiệu năng và phối hợp API.",
+    },
+    sampleItems: [
+      {
+        role: "Frontend Developer",
+        company: "F8 Technology",
+        period: "2023 - Nay",
+        description: "Xây dựng giao diện tuyển dụng, tối ưu hiệu năng và phối hợp API.",
       },
+      {
+        role: "Thực tập sinh Web",
+        company: "Nova Digital",
+        period: "2022 - 2023",
+        description: "Tham gia phát triển landing page và trang quản trị nội bộ.",
+      },
+    ],
+    itemBlocks: [
+      { id: "role", type: "text", bindingPath: "role" },
+      { id: "company", type: "text", bindingPath: "company" },
+      { id: "period", type: "text", bindingPath: "period" },
+      { id: "description", type: "multiline", bindingPath: "description" },
+    ],
+  },
+  {
+    id: "education",
+    label: "Học vấn",
+    bindingPath: "education",
+    defaultItem: {
+      major: "Công nghệ thông tin",
+      school: "Đại học Bách khoa TP.HCM",
+      period: "2018 - 2022",
+      description: "Tốt nghiệp loại Khá. Đồ án về hệ thống tuyển dụng trực tuyến.",
+    },
+    sampleItems: [
+      {
+        major: "Công nghệ thông tin",
+        school: "Đại học Bách khoa TP.HCM",
+        period: "2018 - 2022",
+        description: "Tốt nghiệp loại Khá. Đồ án về hệ thống tuyển dụng trực tuyến.",
+      },
+    ],
+    itemBlocks: [
+      { id: "major", type: "text", bindingPath: "major" },
+      { id: "school", type: "text", bindingPath: "school" },
+      { id: "period", type: "text", bindingPath: "period" },
+      { id: "description", type: "multiline", bindingPath: "description" },
+    ],
+  },
+  {
+    id: "skills",
+    label: "Kỹ năng",
+    bindingPath: "skills",
+    defaultItem: { name: "React" },
+    sampleItems: [
+      { name: "React" },
+      { name: "TypeScript" },
+      { name: "Tailwind CSS" },
+      { name: "Node.js" },
+    ],
+    itemBlocks: [{ id: "name", type: "text", bindingPath: "name" }],
+  },
+];
+
+const CV_TEMPLATE_PRESETS = [
+  { name: "Cổ điển", description: "Một cột, đầu trang xanh.", layout: "single-column", theme: "green", variant: "classic" },
+  { name: "Tối giản", description: "Một cột, ít trang trí.", layout: "single-column", theme: "slate", variant: "minimal" },
+  { name: "Điều hành", description: "Hai cột, kiểu trang trọng.", layout: "two-column", theme: "slate", variant: "executive" },
+  { name: "Sáng tạo", description: "Một cột, nhấn màu.", layout: "single-column", theme: "green", variant: "creative" },
+  { name: "Thẻ hiện đại", description: "Các mục đặt trong thẻ.", layout: "single-column", theme: "slate", variant: "modernCard" },
+  { name: "Gradient", description: "Đầu trang chuyển màu.", layout: "single-column", theme: "green", variant: "gradient" },
+  { name: "Gọn", description: "Mật độ chữ cao, tiết kiệm trang.", layout: "single-column", theme: "green", variant: "compact" },
+  { name: "Tối", description: "Nền tối, chữ sáng.", layout: "single-column", theme: "slate", variant: "dark" },
+  { name: "Dòng thời gian", description: "Kinh nghiệm theo mốc thời gian.", layout: "single-column", theme: "slate", variant: "timeline" },
+  { name: "Báo", description: "Bố cục kiểu báo in.", layout: "single-column", theme: "slate", variant: "newspaper" },
+  { name: "Đậm", description: "Tương phản cao.", layout: "single-column", theme: "green", variant: "bold" },
+  { name: "Thanh bên", description: "Hai cột, sidebar nhạt.", layout: "two-column", theme: "slate", variant: "softSidebar" },
+  { name: "Chuyên nghiệp", description: "Một cột, tông xám trang trọng.", layout: "single-column", theme: "slate", variant: "classic" },
+  { name: "Fresher", description: "Gọn, phù hợp ứng viên mới ra trường.", layout: "single-column", theme: "green", variant: "compact" },
+  { name: "Kỹ thuật", description: "Kinh nghiệm theo mốc thời gian, tông xanh.", layout: "single-column", theme: "green", variant: "timeline" },
+  { name: "Kinh doanh", description: "Hai cột, sidebar xanh cho vị trí sales.", layout: "two-column", theme: "green", variant: "softSidebar" },
+  { name: "Hiện đại xanh", description: "Các mục đặt trong thẻ, tông xanh.", layout: "single-column", theme: "green", variant: "modernCard" },
+  { name: "Tối giản xanh", description: "Ít trang trí, nhấn màu xanh.", layout: "single-column", theme: "green", variant: "minimal" },
+  { name: "Điều hành xanh", description: "Hai cột trang trọng, tông xanh.", layout: "two-column", theme: "green", variant: "executive" },
+  { name: "Báo xanh", description: "Bố cục báo in, nhấn xanh.", layout: "single-column", theme: "green", variant: "newspaper" },
+] as const;
+
+const upsertCvTemplate = async () => {
+  let firstId = 0;
+  for (const preset of CV_TEMPLATE_PRESETS) {
+    const templateData = {
+      layout: preset.layout,
+      meta: { theme: preset.theme, variant: preset.variant, density: "comfortable" },
+      blocks: cvProfileBlocks,
+      sections: cvSections,
+    };
+    const existing = await prisma.cvTemplate.findFirst({
+      where: { name: preset.name },
       select: { id: true },
     });
+    const row = existing
+      ? await prisma.cvTemplate.update({
+          where: { id: existing.id },
+          data: {
+            description: preset.description,
+            thumbnailUrl: null,
+            templateData,
+            status: true,
+            deletedAt: null,
+          },
+          select: { id: true },
+        })
+      : await prisma.cvTemplate.create({
+          data: {
+            name: preset.name,
+            description: preset.description,
+            templateData,
+            status: true,
+          },
+          select: { id: true },
+        });
+    if (!firstId) firstId = row.id;
   }
-
-  return prisma.cvTemplate.create({
-    data: {
-      name,
-      description: "Mẫu CV chuyên nghiệp cho ứng viên công nghệ",
-      thumbnailUrl: "https://example.com/templates/modern-professional.png",
-      templateData,
-      isActive: true,
-    },
-    select: { id: true },
-  });
+  return { id: firstId };
 };
 
 const upsertJob = async (data: {
@@ -203,7 +231,7 @@ const upsertJob = async (data: {
 }) => {
   const existing = await prisma.job.findFirst({
     where: { title: data.title, companyId: data.companyId },
-    select: { id: true },
+    select: { id: true, slug: true },
   });
 
   if (existing) {
@@ -217,9 +245,23 @@ const upsertJob = async (data: {
     });
   }
 
+  const usedSlugs = new Set(
+    (
+      await prisma.job.findMany({
+        select: { slug: true },
+      })
+    )
+      .map((row) => row.slug)
+      .filter((slug): slug is string => Boolean(slug)),
+  );
+  usedSlugs.add("recommended");
+  usedSlugs.add("suggest");
+  usedSlugs.add("saved");
+
   return prisma.job.create({
     data: {
       ...data,
+      slug: uniqueSlug(data.title, usedSlugs),
       moderationStatus: JobModerationStatus.APPROVED,
     },
     select: { id: true },
@@ -408,6 +450,7 @@ const main = async () => {
     })),
     skipDuplicates: true,
   });
+  await ensureAdminRoutePermissions();
 
   const employerPermissionNames = [
     "DASHBOARD_VIEW",
@@ -531,57 +574,41 @@ const main = async () => {
     create: { userId: candidateUser.id, phone: "0902606003" },
   });
 
-  const vietnamLocations = [
-    {
-      code: "HCM",
-      name: "Thành phố Hồ Chí Minh",
-      districts: ["Quận 1", "Quận 3", "Quận 7", "Bình Thạnh", "Thủ Đức"],
-    },
-    {
-      code: "HN",
-      name: "Hà Nội",
-      districts: ["Cầu Giấy", "Đống Đa", "Hoàn Kiếm", "Nam Từ Liêm", "Thanh Xuân"],
-    },
-    {
-      code: "DN",
-      name: "Đà Nẵng",
-      districts: ["Hải Châu", "Thanh Khê", "Sơn Trà", "Ngũ Hành Sơn"],
-    },
-    {
-      code: "HP",
-      name: "Hải Phòng",
-      districts: ["Hồng Bàng", "Ngô Quyền", "Lê Chân", "Hải An"],
-    },
-    {
-      code: "CT",
-      name: "Cần Thơ",
-      districts: ["Ninh Kiều", "Cái Răng", "Bình Thủy", "Ô Môn"],
-    },
-    {
-      code: "BD",
-      name: "Bình Dương",
-      districts: ["Thủ Dầu Một", "Dĩ An", "Thuận An", "Bến Cát"],
-    },
-    {
-      code: "DNA",
-      name: "Đồng Nai",
-      districts: ["Biên Hòa", "Long Khánh", "Nhơn Trạch", "Trảng Bom"],
-    },
-    {
-      code: "KH",
-      name: "Khánh Hòa",
-      districts: ["Nha Trang", "Cam Ranh", "Ninh Hòa", "Diên Khánh"],
-    },
-    {
-      code: "QNA",
-      name: "Quảng Nam",
-      districts: ["Tam Kỳ", "Hội An", "Điện Bàn", "Núi Thành"],
-    },
-    {
-      code: "TH",
-      name: "Thanh Hóa",
-      districts: ["Thành phố Thanh Hóa", "Sầm Sơn", "Bỉm Sơn", "Nghi Sơn"],
-    },
+  const vietnamLocations: { code: string; name: string; districts: string[] }[] = [
+    { code: "HN", name: "Thành phố Hà Nội", districts: [] },
+    { code: "HUE", name: "Thành phố Huế", districts: [] },
+    { code: "LC", name: "Lai Châu", districts: [] },
+    { code: "DB", name: "Điện Biên", districts: [] },
+    { code: "SL", name: "Sơn La", districts: [] },
+    { code: "LS", name: "Lạng Sơn", districts: [] },
+    { code: "QN", name: "Quảng Ninh", districts: [] },
+    { code: "TH", name: "Thanh Hóa", districts: [] },
+    { code: "NA", name: "Nghệ An", districts: [] },
+    { code: "HT", name: "Hà Tĩnh", districts: [] },
+    { code: "CB", name: "Cao Bằng", districts: [] },
+    { code: "TQ", name: "Tuyên Quang", districts: [] },
+    { code: "LCA", name: "Lào Cai", districts: [] },
+    { code: "TN", name: "Thái Nguyên", districts: [] },
+    { code: "PT", name: "Phú Thọ", districts: [] },
+    { code: "BN", name: "Bắc Ninh", districts: [] },
+    { code: "HY", name: "Hưng Yên", districts: [] },
+    { code: "HP", name: "Thành phố Hải Phòng", districts: [] },
+    { code: "NB", name: "Ninh Bình", districts: [] },
+    { code: "QT", name: "Quảng Trị", districts: [] },
+    { code: "DN", name: "Thành phố Đà Nẵng", districts: [] },
+    { code: "QNG", name: "Quảng Ngãi", districts: [] },
+    { code: "GL", name: "Gia Lai", districts: [] },
+    { code: "KH", name: "Khánh Hòa", districts: [] },
+    { code: "LD", name: "Lâm Đồng", districts: [] },
+    { code: "DL", name: "Đắk Lắk", districts: [] },
+    { code: "HCM", name: "Thành phố Hồ Chí Minh", districts: [] },
+    { code: "DNA", name: "Đồng Nai", districts: [] },
+    { code: "TNI", name: "Tây Ninh", districts: [] },
+    { code: "CT", name: "Thành phố Cần Thơ", districts: [] },
+    { code: "VL", name: "Vĩnh Long", districts: [] },
+    { code: "DT", name: "Đồng Tháp", districts: [] },
+    { code: "CM", name: "Cà Mau", districts: [] },
+    { code: "AG", name: "An Giang", districts: [] },
   ];
 
   const provinces = new Map<string, { id: number }>();
@@ -605,134 +632,45 @@ const main = async () => {
   const district1 = districts.get("HCM:Quận 1")!;
   const district7 = districts.get("HCM:Quận 7")!;
 
-  const itParent = await prisma.categoryParent.upsert({
-    where: { slug: "cong-nghe-thong-tin" },
-    update: { name: "Công nghệ thông tin" },
-    create: { name: "Công nghệ thông tin", slug: "cong-nghe-thong-tin" },
-    select: { id: true },
-  });
-  const businessParent = await prisma.categoryParent.upsert({
-    where: { slug: "kinh-doanh" },
-    update: { name: "Kinh doanh" },
-    create: { name: "Kinh doanh", slug: "kinh-doanh" },
-    select: { id: true },
-  });
-  const marketingParent = await prisma.categoryParent.upsert({
-    where: { slug: "marketing-truyen-thong" },
-    update: { name: "Marketing - Truyền thông" },
-    create: { name: "Marketing - Truyền thông", slug: "marketing-truyen-thong" },
-    select: { id: true },
-  });
-  const operationsParent = await prisma.categoryParent.upsert({
-    where: { slug: "van-hanh-san-xuat" },
-    update: { name: "Vận hành - Sản xuất" },
-    create: { name: "Vận hành - Sản xuất", slug: "van-hanh-san-xuat" },
-    select: { id: true },
-  });
-
-  const backendCategory = await prisma.category.upsert({
-    where: { slug: "backend-developer" },
-    update: {
-      name: "Backend Developer",
-      parentCategoryId: itParent.id,
-    },
-    create: {
-      name: "Backend Developer",
-      slug: "backend-developer",
-      parentCategoryId: itParent.id,
-    },
-    select: { id: true },
-  });
-  const frontendCategory = await prisma.category.upsert({
-    where: { slug: "frontend-developer" },
-    update: {
-      name: "Frontend Developer",
-      parentCategoryId: itParent.id,
-    },
-    create: {
-      name: "Frontend Developer",
-      slug: "frontend-developer",
-      parentCategoryId: itParent.id,
-    },
-    select: { id: true },
-  });
-  await prisma.category.upsert({
-    where: { slug: "sales-executive" },
-    update: {
-      name: "Sales Executive",
-      parentCategoryId: businessParent.id,
-    },
-    create: {
-      name: "Sales Executive",
-      slug: "sales-executive",
-      parentCategoryId: businessParent.id,
-    },
-  });
-  const dataCategory = await prisma.category.upsert({
-    where: { slug: "data-analyst" },
-    update: {
-      name: "Data Analyst",
-      parentCategoryId: itParent.id,
-    },
-    create: {
-      name: "Data Analyst",
-      slug: "data-analyst",
-      parentCategoryId: itParent.id,
-    },
-    select: { id: true },
-  });
-  const mobileCategory = await prisma.category.upsert({
-    where: { slug: "mobile-developer" },
-    update: {
-      name: "Mobile Developer",
-      parentCategoryId: itParent.id,
-    },
-    create: {
-      name: "Mobile Developer",
-      slug: "mobile-developer",
-      parentCategoryId: itParent.id,
-    },
-    select: { id: true },
-  });
-  const marketingCategory = await prisma.category.upsert({
-    where: { slug: "digital-marketing" },
-    update: {
-      name: "Digital Marketing",
-      parentCategoryId: marketingParent.id,
-    },
-    create: {
-      name: "Digital Marketing",
-      slug: "digital-marketing",
-      parentCategoryId: marketingParent.id,
-    },
-    select: { id: true },
-  });
-  const productCategory = await prisma.category.upsert({
-    where: { slug: "product-manager" },
-    update: {
-      name: "Product Manager",
-      parentCategoryId: businessParent.id,
-    },
-    create: {
-      name: "Product Manager",
-      slug: "product-manager",
-      parentCategoryId: businessParent.id,
-    },
-    select: { id: true },
-  });
-  const operationsCategory = await prisma.category.upsert({
-    where: { slug: "operations-specialist" },
-    update: {
-      name: "Operations Specialist",
-      parentCategoryId: operationsParent.id,
-    },
-    create: {
-      name: "Operations Specialist",
-      slug: "operations-specialist",
-      parentCategoryId: operationsParent.id,
-    },
-    select: { id: true },
-  });
+  const categoryIds = new Map<string, number>();
+  const parentIds = new Map<string, number>();
+  for (const parent of JOB_CATEGORY_CATALOG) {
+    const parentRow = await prisma.categoryParent.upsert({
+      where: { slug: parent.slug },
+      update: { name: parent.name, deletedAt: null },
+      create: { name: parent.name, slug: parent.slug },
+      select: { id: true },
+    });
+    parentIds.set(parent.slug, parentRow.id);
+    for (const category of parent.categories) {
+      const row = await prisma.category.upsert({
+        where: { slug: category.slug },
+        update: {
+          name: category.name,
+          parentCategoryId: parentRow.id,
+          deletedAt: null,
+        },
+        create: {
+          name: category.name,
+          slug: category.slug,
+          parentCategoryId: parentRow.id,
+        },
+        select: { id: true },
+      });
+      categoryIds.set(category.slug, row.id);
+    }
+  }
+  const backendCategory = { id: categoryIds.get("backend-developer")! };
+  const frontendCategory = { id: categoryIds.get("frontend-developer")! };
+  const dataCategory = { id: categoryIds.get("data-analyst")! };
+  const mobileCategory = { id: categoryIds.get("mobile-developer")! };
+  const marketingCategory = { id: categoryIds.get("digital-marketing")! };
+  const productCategory = { id: categoryIds.get("product-manager")! };
+  const operationsCategory = { id: categoryIds.get("operations-specialist")! };
+  const itParent = { id: parentIds.get("cong-nghe-thong-tin")! };
+  const businessParent = { id: parentIds.get("kinh-doanh")! };
+  const marketingParent = { id: parentIds.get("marketing-truyen-thong")! };
+  const operationsParent = { id: parentIds.get("van-hanh-san-xuat")! };
 
   const skillNames = [
     "TypeScript",
@@ -769,6 +707,12 @@ const main = async () => {
     skills.set(name, row.id);
   }
 
+  await upsertCvTemplate();
+  console.log("Seed completed");
+  console.log(`Admin email: ${ADMIN_EMAIL}`);
+  console.log(`Admin password: ${ADMIN_PASSWORD}`);
+  return;
+
   const company = await prisma.company.upsert({
     where: { name: "F8 Technology JSC" },
     update: {
@@ -782,6 +726,7 @@ const main = async () => {
     },
     create: {
       name: "F8 Technology JSC",
+      slug: "f8-technology-jsc",
       description: "Công ty công nghệ mẫu cho dữ liệu local seed.",
       logo: "https://example.com/logos/f8-tech.png",
       website: "https://fullstack.edu.vn",
@@ -1258,6 +1203,14 @@ const main = async () => {
       },
       create: {
         name: seed.company.name,
+        slug: seed.company.name
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/đ/g, "d")
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-+|-+$/g, "")
+          .slice(0, 160) || "cong-ty",
         description: seed.company.description,
         logo: seed.company.logo,
         website: seed.company.website,
@@ -1328,9 +1281,10 @@ const main = async () => {
     where: { userId: candidateUser.id, title: "CV Backend Developer" },
     select: { id: true },
   });
-  if (existingCv) {
+  const existingCvId = existingCv?.id ?? 0;
+  if (existingCvId > 0) {
     await prisma.cv.update({
-      where: { id: existingCv.id },
+      where: { id: existingCvId },
       data: {
         templateId: template.id,
         status: CvStatus.COMPLETED,
@@ -1462,6 +1416,84 @@ const main = async () => {
   });
 
   await ensureAuditLog(admin.id);
+
+  const blogSeeds = [
+    {
+      slug: "cv-chuan-ats",
+      title: "Viết CV chuẩn ATS để vượt cổng lọc tự động",
+      excerpt:
+        "Từ khóa, cấu trúc, độ dài — checklist ngắn gọn cho ứng viên IT.",
+      content: `## ATS đọc CV như thế nào
+
+Phần mềm ATS tách tiêu đề, kinh nghiệm và kỹ năng thành trường dữ liệu. CV dạng cột phức tạp, icon hay bảng dễ bị mất nội dung.
+
+## Checklist trước khi nộp
+
+**Dùng tiêu đề rõ:** Kinh nghiệm, Học vấn, Kỹ năng. Khớp từ khóa trong tin tuyển dụng (React, TypeScript, REST) nếu bạn thực sự dùng.
+
+**Độ dài:** 1–2 trang. Mỗi bullet nên có số liệu: giảm thời gian tải 30%, xử lý 20k đơn/ngày.
+
+**File:** PDF text (không scan). Tên file: Ho-ten-Frontend.pdf.
+
+Sau khi xuất PDF, copy toàn bộ text ra Notepad. Nếu thiếu mục, ATS cũng sẽ thiếu.`,
+    },
+    {
+      slug: "phong-van-star",
+      title: "Phỏng vấn theo mô hình STAR",
+      excerpt:
+        "Cách kể chuyện có số liệu, gây ấn tượng với hiring manager.",
+      content: `## STAR là gì
+
+**S**ituation — bối cảnh. **T**ask — trách nhiệm. **A**ction — việc bạn làm. **R**esult — kết quả đo được.
+
+## Ví dụ ngắn
+
+Situation: API checkout timeout 8% đơn hàng. Task: giảm lỗi trước Black Friday. Action: thêm retry, tách payment worker, theo dõi p95. Result: timeout còn 0.4%, doanh thu không mất đơn.
+
+## Gợi ý luyện
+
+Chuẩn bị 4–5 câu chuyện: xung đột team, deadline, bug production, mentorship. Tập nói 90 giây/câu. Đừng nói “chúng tôi” nếu hành động là của bạn.`,
+    },
+    {
+      slug: "luong-thoa-thuan",
+      title: "Thương lượng lương minh bạch",
+      excerpt:
+        "Nghiên cứu thị trường và khung lương trước khi nhận offer.",
+      content: `## Biết số trước khi nói số
+
+Xem tin tương tự trên trang, hỏi mentor cùng level, đối chiếu năm kinh nghiệm và stack. Đừng lấy offer cao nhất trên mạng làm mốc duy nhất.
+
+## Cách mở lời
+
+Nói tổng thu nhập: lương gross, thưởng, remote, thiết bị. Nếu HR hỏi kỳ vọng sớm, đưa **khoảng** đã nghiên cứu, không phải một con số cứng.
+
+## Khi có offer
+
+Cảm ơn, xin thời gian 2–3 ngày. Nếu muốn tăng: nêu lý do gắn với trách nhiệm (on-call, lead) chứ không so sánh cảm tính. Biết điểm dừng: văn hóa, học hỏi, manager cũng là một phần offer.`,
+    },
+  ];
+
+  for (const post of blogSeeds) {
+    await prisma.blogPost.upsert({
+      where: { slug: post.slug },
+      update: {
+        title: post.title,
+        excerpt: post.excerpt,
+        content: post.content,
+        deletedAt: null,
+        publishedAt: new Date(),
+        authorId: admin.id,
+      },
+      create: {
+        slug: post.slug,
+        title: post.title,
+        excerpt: post.excerpt,
+        content: post.content,
+        publishedAt: new Date(),
+        authorId: admin.id,
+      },
+    });
+  }
 
   console.log("Seed completed");
   console.log(`Admin email: ${ADMIN_EMAIL}`);

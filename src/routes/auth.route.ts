@@ -8,6 +8,9 @@ import {
   refreshTokenSchema,
   registerSchema,
   resetPasswordSchema,
+  twoFactorCodeSchema,
+  twoFactorDisableSchema,
+  twoFactorVerifySchema,
   verifyEmailSchema,
 } from "../schemas/auth.schema";
 import { authMiddleware } from "../middlewares/auth.middleware";
@@ -65,6 +68,29 @@ router.post(
   authController.resendResetVerification,
 );
 router.post("/login", loginRateLimiter, validate(loginSchema), authController.login);
+router.post(
+  "/2fa/verify",
+  loginRateLimiter,
+  validate(twoFactorVerifySchema),
+  authController.verifyAdminTotp,
+);
+router.post(
+  "/2fa/setup",
+  authMiddleware,
+  authController.setupAdminTotp,
+);
+router.post(
+  "/2fa/enable",
+  authMiddleware,
+  validate(twoFactorCodeSchema),
+  authController.enableAdminTotp,
+);
+router.post(
+  "/2fa/disable",
+  authMiddleware,
+  validate(twoFactorDisableSchema),
+  authController.disableAdminTotp,
+);
 
 router.post(
   "/refresh-token",

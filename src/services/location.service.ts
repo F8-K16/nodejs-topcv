@@ -4,16 +4,25 @@ import { env } from "../config/env";
 import {
   CacheKeys,
   cacheGetJson,
-  cacheSetJsonPersistent,
+  cacheSetJson,
   invalidateLocationCaches,
   invalidateLocationCachesForProvince,
 } from "../utils/cache";
 
+const HIDDEN_LOCATION_NAMES = new Set(["chưa xác định", "không xác định"]);
+
+function isHiddenLocation(row: { name?: string | null; code?: string | null }) {
+  if (row.code === "UNKNOWN") return true;
+  const name = row.name?.trim().toLowerCase() ?? "";
+  return HIDDEN_LOCATION_NAMES.has(name);
+}
+
 async function fetchProvinces() {
-  return prisma.province.findMany({
+  const rows = await prisma.province.findMany({
     where: { deletedAt: null },
     orderBy: { name: "asc" },
   });
+  return rows.filter((row) => !isHiddenLocation(row));
 }
 
 async function fetchDistricts(provinceId: number) {
@@ -33,11 +42,11 @@ export const locationService = {
       const hit = await cacheGetJson<
         Awaited<ReturnType<typeof fetchProvinces>>
       >(CacheKeys.provinces);
-      if (hit) return hit;
+      if (hit) return hit.filter((row) => !isHiddenLocation(row));
     }
     const rows = await fetchProvinces();
     if (env.CACHE_ENABLED) {
-      await cacheSetJsonPersistent(CacheKeys.provinces, rows);
+      await cacheSetJson(CacheKeys.provinces, rows, 43200);
     }
     return rows;
   },
@@ -48,11 +57,13 @@ export const locationService = {
       const hit = await cacheGetJson<
         Awaited<ReturnType<typeof fetchDistricts>>
       >(CacheKeys.districts(provinceId));
-      if (hit) return hit;
+      if (hit) return hit.filter((row) => !isHiddenLocation(row));
     }
-    const district = await fetchDistricts(provinceId);
+    const district = (await fetchDistricts(provinceId)).filter(
+      (row) => !isHiddenLocation(row),
+    );
     if (env.CACHE_ENABLED) {
-      await cacheSetJsonPersistent(CacheKeys.districts(provinceId), district);
+      await cacheSetJson(CacheKeys.districts(provinceId), district, 43200);
     }
     return district;
   },
@@ -82,6 +93,13 @@ export const locationService = {
         : "";
     const where = {
       deletedAt: null,
+      NOT: {
+        OR: [
+          { code: "UNKNOWN" },
+          { name: "Chưa xác định" },
+          { name: "Không xác định" },
+        ],
+      },
       ...(search
         ? {
             OR: [

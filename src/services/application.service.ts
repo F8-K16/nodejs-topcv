@@ -1,9 +1,14 @@
 import { Prisma } from "../generated/prisma/client";
 import type { ApplicationStatus } from "../generated/prisma/client";
 import { prisma } from "../utils/prisma";
+import { env } from "../config/env";
 import {
+  CacheKeys,
   cacheDelRecommendedJobsForUser,
+  cacheGetJson,
+  cacheSetJson,
   invalidateAdminDashboard,
+  invalidateCandidateApplicationCaches,
 } from "../utils/cache";
 import { HttpException } from "../utils/exception";
 import { resolveResumePreviewForEmployer } from "../utils/application-resume-preview";
@@ -232,6 +237,7 @@ export const applicationService = {
     await invalidateAdminDashboard();
 
     const candidateUserId = row.candidate.user.id;
+    await invalidateCandidateApplicationCaches(candidateUserId);
     await notificationService.createForUsers([candidateUserId], {
       type: NotificationType.APPLICATION_STATUS,
       title: "Cập nhật trạng thái đơn ứng tuyển",
@@ -346,6 +352,7 @@ export const applicationService = {
     }
     await invalidateAdminDashboard();
     await cacheDelRecommendedJobsForUser(userId);
+    await invalidateCandidateApplicationCaches(userId);
 
     const jobInfo = await prisma.job.findUnique({
       where: { id: payload.jobId },
@@ -369,6 +376,9 @@ export const applicationService = {
   },
 
   async getAppliedJobIds(userId: number): Promise<number[]> {
+    const cacheKey = CacheKeys.candidateAppliedJobIds(userId);
+    const hit = await cacheGetJson<number[]>(cacheKey);
+    if (hit) return hit;
     const candidate = await prisma.candidate.findUnique({
       where: { userId },
       select: { id: true },
@@ -378,17 +388,26 @@ export const applicationService = {
       where: { candidateId: candidate.id },
       select: { jobId: true },
     });
-    return rows.map((r) => r.jobId);
+    const jobIds = rows.map((r) => r.jobId);
+    await cacheSetJson(
+      cacheKey,
+      jobIds,
+      env.CACHE_TTL_CANDIDATE_APPLICATIONS_SEC,
+    );
+    return jobIds;
   },
 
   async listForCandidate(userId: number) {
+    const cacheKey = CacheKeys.candidateApplications(userId);
+    const hit = await cacheGetJson<unknown>(cacheKey);
+    if (Array.isArray(hit)) return hit as Awaited<ReturnType<typeof prisma.application.findMany>>;
     const candidate = await prisma.candidate.findUnique({
       where: { userId },
     });
     if (!candidate) {
       return [];
     }
-    return prisma.application.findMany({
+    const rows = await prisma.application.findMany({
       where: { candidateId: candidate.id },
       orderBy: { createdAt: "desc" },
       include: {
@@ -403,6 +422,12 @@ export const applicationService = {
         resume: { select: { id: true, title: true, fileUrl: true } },
       },
     });
+    await cacheSetJson(
+      cacheKey,
+      rows,
+      env.CACHE_TTL_CANDIDATE_APPLICATIONS_SEC,
+    );
+    return rows;
   },
 
   async getForCandidate(userId: number, applicationId: number) {
@@ -434,5 +459,51 @@ export const applicationService = {
       throw new HttpException("Not found", 404);
     }
     return row;
+  },
+
+  async withdrawManyAsCandidate(userId: number, ids: number[]) {
+    const uniqueIds = [...new Set(ids.map((id) => Math.trunc(id)))].filter(
+      (id) => Number.isFinite(id) && id > 0,
+    );
+    if (uniqueIds.length === 0) {
+      throw new HttpException("Danh sách đơn không hợp lệ", 400);
+    }
+
+    const candidate = await prisma.candidate.findUnique({
+      where: { userId },
+      select: { id: true },
+    });
+    if (!candidate) {
+      throw new HttpException(
+        "Chỉ tài khoản ứng viên mới có thể rút đơn",
+        403,
+        "APPLY_NOT_CANDIDATE",
+      );
+    }
+
+    const owned = await prisma.application.findMany({
+      where: { id: { in: uniqueIds }, candidateId: candidate.id },
+      select: { id: true, status: true },
+    });
+    const ownedIds = new Set(owned.map((row) => row.id));
+    const missing = uniqueIds.filter((id) => !ownedIds.has(id));
+    if (missing.length > 0) {
+      throw new HttpException("Một số đơn không tồn tại", 404);
+    }
+
+    const pendingIds = owned
+      .filter((row) => row.status === "PENDING")
+      .map((row) => row.id);
+    if (pendingIds.length > 0) {
+      await prisma.application.deleteMany({
+        where: { id: { in: pendingIds }, candidateId: candidate.id },
+      });
+      await invalidateCandidateApplicationCaches(userId);
+    }
+
+    return {
+      withdrawn: pendingIds.length,
+      skipped: owned.length - pendingIds.length,
+    };
   },
 };

@@ -18,7 +18,7 @@ export const employerService = {
     opts?: { skipCacheInvalidate?: boolean },
   ) {
     if (isNaN(employerId)) throw new HttpException("Invalid ID", 400);
-    await prismaTransaction(async (tx) => {
+    const notify = await prismaTransaction(async (tx) => {
       const employer = await tx.employer.findUnique({
         where: { id: employerId },
         include: { user: true },
@@ -28,16 +28,6 @@ export const employerService = {
         throw new HttpException("Không tìm thấy nhà tuyển dụng", 404);
       }
 
-      await emailQueue.add("send-email-notification", {
-        to: employer.user.email,
-        subject: "Tài khoản đã được phê duyệt",
-        template: "approve-account",
-        options: {
-          username: employer.user.username,
-          appName: "TopCV",
-        },
-      });
-
       await tx.employer.update({
         where: { id: employerId },
         data: { status: "APPROVED" },
@@ -46,7 +36,28 @@ export const employerService = {
       if (employer.companyId) {
         await companyService.updateCompanyStatus(employer.companyId, true, tx);
       }
+
+      return {
+        to: employer.user.email,
+        username: employer.user.username,
+      };
     });
+    try {
+      await emailQueue.add("send-email-notification", {
+        to: notify.to,
+        subject: "Tài khoản đã được phê duyệt",
+        template: "approve-account",
+        options: {
+          username: notify.username,
+          appName: "TopCV",
+        },
+      });
+    } catch (error) {
+      logger.warn("approveEmployer email enqueue failed", {
+        employerId,
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
     if (!opts?.skipCacheInvalidate) {
       await Promise.all([invalidateAdminDashboard(), invalidateJobCaches()]);
     }

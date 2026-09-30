@@ -1,13 +1,21 @@
 import { JwtPayload } from "jsonwebtoken";
 
 import { getOtpKeyLegacy, hashPassword, verifyPassword } from "../utils/hashing";
+import QRCode from "qrcode";
 import {
   createAccessToken,
   createRefreshToken,
+  createTwoFactorChallengeToken,
   decodeToken,
   verifyAccessToken,
   verifyRefreshToken,
+  verifyTwoFactorChallengeToken,
 } from "../utils/jwt";
+import {
+  buildOtpauthUrl,
+  generateTotpSecret,
+  verifyTotp,
+} from "../utils/totp";
 import { userService } from "./user.service";
 import { redisClient } from "../utils/redis";
 import { HttpException } from "../utils/exception";
@@ -53,6 +61,85 @@ import {
   authResendVerifyKeyLegacy,
 } from "../utils/auth_redis_keys";
 
+const GOOGLE_AVATAR_MAX_LENGTH = 512;
+
+function normalizeGoogleAvatarUrl(raw: string | undefined): string | null {
+  const value = raw?.trim() ?? "";
+  if (!value || value.length > GOOGLE_AVATAR_MAX_LENGTH) return null;
+  try {
+    const url = new URL(value);
+    if (url.protocol !== "https:") return null;
+    const host = url.hostname.toLowerCase();
+    if (
+      host !== "googleusercontent.com" &&
+      !host.endsWith(".googleusercontent.com")
+    ) {
+      return null;
+    }
+    return value;
+  } catch {
+    return null;
+  }
+}
+
+function isGoogleHostedAvatar(raw: string | null | undefined): boolean {
+  if (!raw) return false;
+  try {
+    const host = new URL(raw).hostname.toLowerCase();
+    return (
+      host === "googleusercontent.com" || host.endsWith(".googleusercontent.com")
+    );
+  } catch {
+    return false;
+  }
+}
+
+async function uniqueUsernameForUser(
+  nameHint: string,
+  userId: number,
+): Promise<string> {
+  const base = nameHint.replace(/\s+/g, " ").trim().slice(0, 30) || "user";
+  let username = base;
+  for (let attempt = 0; attempt < 20; attempt += 1) {
+    const taken = await prisma.user.findFirst({
+      where: { username, NOT: { id: userId } },
+      select: { id: true },
+    });
+    if (!taken) return username;
+    const suffix = ` ${attempt + 1}`;
+    username = (base.slice(0, 30 - suffix.length) + suffix).slice(0, 30);
+  }
+  return base;
+}
+
+async function buildGoogleProfilePatch(
+  user: {
+    id: number;
+    isVerified: boolean;
+    avatar: string | null;
+    username: string;
+  },
+  nameHint: string,
+  googleAvatar: string | null,
+) {
+  const patch: {
+    isVerified?: boolean;
+    avatar?: string;
+    username?: string;
+  } = {};
+  if (!user.isVerified) patch.isVerified = true;
+
+  const avatarIsCustom = Boolean(user.avatar) && !isGoogleHostedAvatar(user.avatar);
+  if (googleAvatar && !avatarIsCustom && user.avatar !== googleAvatar) {
+    patch.avatar = googleAvatar;
+  }
+  if (nameHint && !avatarIsCustom) {
+    const nextUsername = await uniqueUsernameForUser(nameHint, user.id);
+    if (nextUsername !== user.username) patch.username = nextUsername;
+  }
+  return patch;
+}
+
 function asRedisUnavailable(e: unknown): HttpException {
   return new HttpException(
     "Hệ thống tạm thời bận, vui lòng thử lại",
@@ -60,6 +147,60 @@ function asRedisUnavailable(e: unknown): HttpException {
     "REDIS_UNAVAILABLE",
     { error: String(e) },
   );
+}
+
+async function issueLoginSession(userId: number, roles: string[]) {
+  const accessToken = createAccessToken({
+    id: userId,
+    roles,
+  });
+  const refreshToken = createRefreshToken({ id: userId });
+  const decoded = decodeToken(refreshToken) as JwtPayload & {
+    jti?: string;
+    exp?: number;
+  };
+  if (!decoded.jti || !decoded.exp) {
+    throw new HttpException(
+      "Không tạo được phiên đăng nhập",
+      500,
+      "AUTH_SESSION_FAILED",
+    );
+  }
+  const ttl = decoded.exp - Math.floor(Date.now() / 1000);
+  try {
+    await Promise.all([
+      redisClient.setEx(authRefreshTokenKey(decoded.jti), ttl, userId.toString()),
+      redisClient.setEx(
+        authRefreshTokenKeyLegacy(decoded.jti),
+        ttl,
+        userId.toString(),
+      ),
+    ]);
+  } catch (e) {
+    throw asRedisUnavailable(e);
+  }
+  return { accessToken, refreshToken };
+}
+
+async function completeAuthenticatedLogin(
+  user: { id: number; totpEnabled: boolean; totpSecret: string | null },
+  roles: string[],
+  publicUser?: object,
+) {
+  const isAdmin = roles.includes("ADMIN");
+  if (isAdmin && user.totpEnabled && user.totpSecret) {
+    return {
+      twoFactorRequired: true as const,
+      challengeToken: createTwoFactorChallengeToken(user.id),
+    };
+  }
+  const session = await issueLoginSession(user.id, roles);
+  return {
+    twoFactorRequired: false as const,
+    twoFactorSetupRequired: isAdmin && !user.totpEnabled,
+    ...session,
+    ...(publicUser ? { user: publicUser } : {}),
+  };
 }
 
 export const authService = {
@@ -252,7 +393,10 @@ export const authService = {
       }
     }
 
-    return user;
+    const { password, totpSecret, ...safeUser } = user;
+    void password;
+    void totpSecret;
+    return safeUser;
   },
 
   async login(email: string, password: string) {
@@ -302,45 +446,15 @@ export const authService = {
       }
     }
 
-    const { roles, permissions } = await this.getUserPermissions(user.id);
-
-    const accessToken = createAccessToken({
-      id: user.id,
-      roles,
-    });
-    const refreshToken = createRefreshToken({ id: user.id });
-
-    const { jti: jtiRefreshToken, exp: expRefreshToken } = decodeToken(
-      refreshToken,
-    ) as JwtPayload & { jti: string };
-
-    const ttl = expRefreshToken! - Math.floor(Date.now() / 1000);
-    try {
-      await Promise.all([
-        redisClient.setEx(
-          authRefreshTokenKey(jtiRefreshToken),
-          ttl,
-          user.id.toString(),
-        ),
-        redisClient.setEx(
-          authRefreshTokenKeyLegacy(jtiRefreshToken),
-          ttl,
-          user.id.toString(),
-        ),
-      ]);
-    } catch (e) {
-      throw asRedisUnavailable(e);
-    }
-
-    return {
-      accessToken,
-      refreshToken,
-      user: {
-        ...user,
-        roles,
-        permissions,
+    const { roles } = await this.getUserPermissions(user.id);
+    return completeAuthenticatedLogin(
+      {
+        id: user.id,
+        totpEnabled: user.totpEnabled,
+        totpSecret: user.totpSecret,
       },
-    };
+      roles,
+    );
   },
 
   async profile(token: string) {
@@ -400,7 +514,7 @@ export const authService = {
       username: string;
       email: string;
       avatar?: string;
-      phone: string;
+      phone?: string;
       provinceId?: number | null;
       districtId?: number | null;
       receiveEmailNotifications?: boolean;
@@ -425,21 +539,25 @@ export const authService = {
       );
     }
 
-    const phoneOwner = await prisma.userPhone.findFirst({
-      where: {
-        phone: payload.phone,
-        NOT: {
-          userId,
-        },
-      },
-    });
+    const phone = payload.phone?.trim() ?? "";
 
-    if (phoneOwner) {
-      throw new HttpException(
-        "Số điện thoại đã được sử dụng",
-        400,
-        "PROFILE_PHONE_ALREADY_USED",
-      );
+    if (phone) {
+      const phoneOwner = await prisma.userPhone.findFirst({
+        where: {
+          phone,
+          NOT: {
+            userId,
+          },
+        },
+      });
+
+      if (phoneOwner) {
+        throw new HttpException(
+          "Số điện thoại đã được sử dụng",
+          400,
+          "PROFILE_PHONE_ALREADY_USED",
+        );
+      }
     }
 
     const hasLocation =
@@ -472,11 +590,15 @@ export const authService = {
         },
       });
 
-      await tx.userPhone.upsert({
-        where: { userId },
-        update: { phone: payload.phone },
-        create: { userId, phone: payload.phone },
-      });
+      if (phone) {
+        await tx.userPhone.upsert({
+          where: { userId },
+          update: { phone },
+          create: { userId, phone },
+        });
+      } else {
+        await tx.userPhone.deleteMany({ where: { userId } });
+      }
 
       if (hasLocation) {
         const candidate = await tx.candidate.findUnique({
@@ -1036,6 +1158,7 @@ export const authService = {
       id: string;
       email?: string;
       name?: string;
+      picture?: string;
     };
 
     if (!g.email) {
@@ -1048,6 +1171,7 @@ export const authService = {
 
     const email = g.email.trim();
     const nameForUsername = (g.name || email.split("@")[0] || "user").trim();
+    const googleAvatar = normalizeGoogleAvatarUrl(g.picture);
 
     let userRow = await userService.findByEmail(email);
 
@@ -1056,15 +1180,27 @@ export const authService = {
         email,
         nameHint: nameForUsername,
         googleSub: g.id,
+        avatar: googleAvatar,
       });
       userRow = await userService.findByEmail(email);
     } else {
-      if (!userRow.isVerified) {
+      const profilePatch = await buildGoogleProfilePatch(
+        userRow,
+        nameForUsername,
+        googleAvatar,
+      );
+      if (Object.keys(profilePatch).length > 0) {
         await prisma.user.update({
           where: { id: userRow.id },
-          data: { isVerified: true },
+          data: profilePatch,
         });
+        await invalidateUserAuthDataCache(userRow.id);
+        userRow = await userService.findByEmail(email);
       }
+    }
+
+    if (userRow) {
+      await userService.clearSyntheticGooglePhone(userRow.id, email, g.id);
     }
 
     if (!userRow) {
@@ -1109,43 +1245,158 @@ export const authService = {
     }
 
     const { roles, permissions } = await this.getUserPermissions(user.id);
-
-    const accessToken = createAccessToken({
-      id: user.id,
+    return completeAuthenticatedLogin(
+      {
+        id: userRow.id,
+        totpEnabled: userRow.totpEnabled,
+        totpSecret: userRow.totpSecret,
+      },
       roles,
-    });
-    const refreshToken = createRefreshToken({ id: user.id });
-
-    const { jti: jtiRefreshToken, exp: expRefreshToken } = decodeToken(
-      refreshToken,
-    ) as JwtPayload & { jti: string };
-
-    const ttl = expRefreshToken! - Math.floor(Date.now() / 1000);
-    try {
-      await Promise.all([
-        redisClient.setEx(
-          authRefreshTokenKey(jtiRefreshToken),
-          ttl,
-          user.id.toString(),
-        ),
-        redisClient.setEx(
-          authRefreshTokenKeyLegacy(jtiRefreshToken),
-          ttl,
-          user.id.toString(),
-        ),
-      ]);
-    } catch (e) {
-      throw asRedisUnavailable(e);
-    }
-
-    return {
-      accessToken,
-      refreshToken,
-      user: {
+      {
         ...user,
         roles,
         permissions,
       },
+    );
+  },
+
+  async requireAdminAccount(userId: number) {
+    const user = await prisma.user.findFirst({
+      where: { id: userId, deletedAt: null },
+      include: {
+        userRoles: { select: { role: { select: { name: true } } } },
+      },
+    });
+    if (!user) {
+      throw new HttpException("Unauthorized", 401, "UNAUTHORIZED");
+    }
+    const roles = user.userRoles.map((row) => row.role.name);
+    if (!roles.includes("ADMIN")) {
+      throw new HttpException(
+        "Chỉ tài khoản quản trị mới dùng xác thực hai lớp",
+        403,
+        "FORBIDDEN",
+      );
+    }
+    return user;
+  },
+
+  async setupAdminTotp(userId: number) {
+    const user = await this.requireAdminAccount(userId);
+    if (user.totpEnabled) {
+      throw new HttpException(
+        "Xác thực hai lớp đã được bật",
+        409,
+        "TWO_FACTOR_ALREADY_ENABLED",
+      );
+    }
+    const secret = generateTotpSecret();
+    await prisma.user.update({
+      where: { id: userId },
+      data: { totpSecret: secret, totpEnabled: false },
+    });
+    await invalidateUserAuthDataCache(userId);
+    const otpauthUrl = buildOtpauthUrl({
+      secret,
+      account: user.email,
+      issuer: "TopCV Admin",
+    });
+    const qrDataUrl = await QRCode.toDataURL(otpauthUrl);
+    return { secret, otpauthUrl, qrDataUrl };
+  },
+
+  async enableAdminTotp(userId: number, code: string) {
+    const user = await this.requireAdminAccount(userId);
+    if (user.totpEnabled) {
+      throw new HttpException(
+        "Xác thực hai lớp đã được bật",
+        409,
+        "TWO_FACTOR_ALREADY_ENABLED",
+      );
+    }
+    if (!user.totpSecret || !verifyTotp(user.totpSecret, code)) {
+      throw new HttpException(
+        "Mã xác thực không đúng",
+        400,
+        "TWO_FACTOR_INVALID_CODE",
+      );
+    }
+    await prisma.user.update({
+      where: { id: userId },
+      data: { totpEnabled: true },
+    });
+    await invalidateUserAuthDataCache(userId);
+    return { totpEnabled: true };
+  },
+
+  async disableAdminTotp(userId: number, password: string, code: string) {
+    const user = await this.requireAdminAccount(userId);
+    if (!user.totpEnabled || !user.totpSecret) {
+      throw new HttpException(
+        "Xác thực hai lớp chưa được bật",
+        400,
+        "TWO_FACTOR_NOT_ENABLED",
+      );
+    }
+    if (!verifyPassword(password, user.password)) {
+      throw new HttpException(
+        "Mật khẩu không đúng",
+        401,
+        "AUTH_INVALID_CREDENTIALS",
+      );
+    }
+    if (!verifyTotp(user.totpSecret, code)) {
+      throw new HttpException(
+        "Mã xác thực không đúng",
+        400,
+        "TWO_FACTOR_INVALID_CODE",
+      );
+    }
+    await prisma.user.update({
+      where: { id: userId },
+      data: { totpEnabled: false, totpSecret: null },
+    });
+    await invalidateUserAuthDataCache(userId);
+    return { totpEnabled: false };
+  },
+
+  async verifyAdminTotpLogin(challengeToken: string, code: string) {
+    const challenge = verifyTwoFactorChallengeToken(challengeToken);
+    if (!challenge) {
+      throw new HttpException(
+        "Phiên xác thực đã hết hạn. Hãy đăng nhập lại.",
+        401,
+        "TWO_FACTOR_CHALLENGE_EXPIRED",
+      );
+    }
+    const user = await prisma.user.findFirst({
+      where: { id: challenge.id, deletedAt: null },
+    });
+    if (!user || user.isBlocked || !user.totpEnabled || !user.totpSecret) {
+      throw new HttpException(
+        "Không thể xác thực hai lớp",
+        401,
+        "TWO_FACTOR_INVALID_CODE",
+      );
+    }
+    if (!verifyTotp(user.totpSecret, code)) {
+      throw new HttpException(
+        "Mã xác thực không đúng",
+        401,
+        "TWO_FACTOR_INVALID_CODE",
+      );
+    }
+    const { roles, permissions } = await this.getUserPermissions(user.id);
+    if (!roles.includes("ADMIN")) {
+      throw new HttpException("Forbidden", 403, "FORBIDDEN");
+    }
+    const session = await issueLoginSession(user.id, roles);
+    const safe = await userService.findById(user.id);
+    return {
+      twoFactorRequired: false as const,
+      twoFactorSetupRequired: false,
+      ...session,
+      user: safe ? { ...safe, roles, permissions } : undefined,
     };
   },
 

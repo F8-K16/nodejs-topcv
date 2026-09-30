@@ -54,6 +54,7 @@ export const ModelName = {
   Action: 'Action',
   Application: 'Application',
   AuditLog: 'AuditLog',
+  BlogPost: 'BlogPost',
   Candidate: 'Candidate',
   CandidatePreference: 'CandidatePreference',
   CandidateSkill: 'CandidateSkill',
@@ -65,11 +66,13 @@ export const ModelName = {
   Company: 'Company',
   CompanyCategory: 'CompanyCategory',
   CompanyFollow: 'CompanyFollow',
+  ContactMessage: 'ContactMessage',
   Cv: 'Cv',
   CvTemplate: 'CvTemplate',
   District: 'District',
   Employer: 'Employer',
   Job: 'Job',
+  JobViewSource: 'JobViewSource',
   Module: 'Module',
   ModuleAction: 'ModuleAction',
   Notification: 'Notification',
@@ -149,6 +152,23 @@ export const AuditLogScalarFieldEnum = {
 } as const
 
 export type AuditLogScalarFieldEnum = (typeof AuditLogScalarFieldEnum)[keyof typeof AuditLogScalarFieldEnum]
+
+
+export const BlogPostScalarFieldEnum = {
+  id: 'id',
+  slug: 'slug',
+  title: 'title',
+  excerpt: 'excerpt',
+  content: 'content',
+  coverUrl: 'coverUrl',
+  publishedAt: 'publishedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt',
+  authorId: 'authorId'
+} as const
+
+export type BlogPostScalarFieldEnum = (typeof BlogPostScalarFieldEnum)[keyof typeof BlogPostScalarFieldEnum]
 
 
 export const CandidateScalarFieldEnum = {
@@ -249,6 +269,7 @@ export type ChatMessageScalarFieldEnum = (typeof ChatMessageScalarFieldEnum)[key
 export const CompanyScalarFieldEnum = {
   id: 'id',
   name: 'name',
+  slug: 'slug',
   description: 'description',
   logo: 'logo',
   website: 'website',
@@ -273,13 +294,24 @@ export type CompanyCategoryScalarFieldEnum = (typeof CompanyCategoryScalarFieldE
 
 
 export const CompanyFollowScalarFieldEnum = {
-  id: 'id',
   candidateId: 'candidateId',
   companyId: 'companyId',
   createdAt: 'createdAt'
 } as const
 
 export type CompanyFollowScalarFieldEnum = (typeof CompanyFollowScalarFieldEnum)[keyof typeof CompanyFollowScalarFieldEnum]
+
+
+export const ContactMessageScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  email: 'email',
+  subject: 'subject',
+  message: 'message',
+  createdAt: 'createdAt'
+} as const
+
+export type ContactMessageScalarFieldEnum = (typeof ContactMessageScalarFieldEnum)[keyof typeof ContactMessageScalarFieldEnum]
 
 
 export const CvScalarFieldEnum = {
@@ -291,7 +323,8 @@ export const CvScalarFieldEnum = {
   content: 'content',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
-  lastEditedAt: 'lastEditedAt'
+  lastEditedAt: 'lastEditedAt',
+  deletedAt: 'deletedAt'
 } as const
 
 export type CvScalarFieldEnum = (typeof CvScalarFieldEnum)[keyof typeof CvScalarFieldEnum]
@@ -303,7 +336,7 @@ export const CvTemplateScalarFieldEnum = {
   description: 'description',
   thumbnailUrl: 'thumbnailUrl',
   templateData: 'templateData',
-  isActive: 'isActive',
+  status: 'status',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   deletedAt: 'deletedAt'
@@ -337,6 +370,7 @@ export type EmployerScalarFieldEnum = (typeof EmployerScalarFieldEnum)[keyof typ
 export const JobScalarFieldEnum = {
   id: 'id',
   title: 'title',
+  slug: 'slug',
   description: 'description',
   minSalary: 'minSalary',
   maxSalary: 'maxSalary',
@@ -357,6 +391,16 @@ export const JobScalarFieldEnum = {
 } as const
 
 export type JobScalarFieldEnum = (typeof JobScalarFieldEnum)[keyof typeof JobScalarFieldEnum]
+
+
+export const JobViewSourceScalarFieldEnum = {
+  id: 'id',
+  jobId: 'jobId',
+  source: 'source',
+  views: 'views'
+} as const
+
+export type JobViewSourceScalarFieldEnum = (typeof JobViewSourceScalarFieldEnum)[keyof typeof JobViewSourceScalarFieldEnum]
 
 
 export const ModuleScalarFieldEnum = {
@@ -451,7 +495,6 @@ export type RolePermissionScalarFieldEnum = (typeof RolePermissionScalarFieldEnu
 
 
 export const SavedJobScalarFieldEnum = {
-  id: 'id',
   candidateId: 'candidateId',
   jobId: 'jobId',
   createdAt: 'createdAt'
@@ -510,6 +553,8 @@ export const UserScalarFieldEnum = {
   deletedAt: 'deletedAt',
   isVerified: 'isVerified',
   isBlocked: 'isBlocked',
+  totpSecret: 'totpSecret',
+  totpEnabled: 'totpEnabled',
   receiveEmailNotifications: 'receiveEmailNotifications'
 } as const
 
@@ -626,6 +671,17 @@ export const AuditLogOrderByRelevanceFieldEnum = {
 export type AuditLogOrderByRelevanceFieldEnum = (typeof AuditLogOrderByRelevanceFieldEnum)[keyof typeof AuditLogOrderByRelevanceFieldEnum]
 
 
+export const BlogPostOrderByRelevanceFieldEnum = {
+  slug: 'slug',
+  title: 'title',
+  excerpt: 'excerpt',
+  content: 'content',
+  coverUrl: 'coverUrl'
+} as const
+
+export type BlogPostOrderByRelevanceFieldEnum = (typeof BlogPostOrderByRelevanceFieldEnum)[keyof typeof BlogPostOrderByRelevanceFieldEnum]
+
+
 export const CategoryOrderByRelevanceFieldEnum = {
   name: 'name',
   slug: 'slug'
@@ -652,6 +708,7 @@ export type ChatMessageOrderByRelevanceFieldEnum = (typeof ChatMessageOrderByRel
 
 export const CompanyOrderByRelevanceFieldEnum = {
   name: 'name',
+  slug: 'slug',
   description: 'description',
   logo: 'logo',
   website: 'website',
@@ -659,6 +716,16 @@ export const CompanyOrderByRelevanceFieldEnum = {
 } as const
 
 export type CompanyOrderByRelevanceFieldEnum = (typeof CompanyOrderByRelevanceFieldEnum)[keyof typeof CompanyOrderByRelevanceFieldEnum]
+
+
+export const ContactMessageOrderByRelevanceFieldEnum = {
+  name: 'name',
+  email: 'email',
+  subject: 'subject',
+  message: 'message'
+} as const
+
+export type ContactMessageOrderByRelevanceFieldEnum = (typeof ContactMessageOrderByRelevanceFieldEnum)[keyof typeof ContactMessageOrderByRelevanceFieldEnum]
 
 
 export const CvOrderByRelevanceFieldEnum = {
@@ -686,11 +753,19 @@ export type DistrictOrderByRelevanceFieldEnum = (typeof DistrictOrderByRelevance
 
 export const JobOrderByRelevanceFieldEnum = {
   title: 'title',
+  slug: 'slug',
   description: 'description',
   workLocation: 'workLocation'
 } as const
 
 export type JobOrderByRelevanceFieldEnum = (typeof JobOrderByRelevanceFieldEnum)[keyof typeof JobOrderByRelevanceFieldEnum]
+
+
+export const JobViewSourceOrderByRelevanceFieldEnum = {
+  source: 'source'
+} as const
+
+export type JobViewSourceOrderByRelevanceFieldEnum = (typeof JobViewSourceOrderByRelevanceFieldEnum)[keyof typeof JobViewSourceOrderByRelevanceFieldEnum]
 
 
 export const ModuleOrderByRelevanceFieldEnum = {
@@ -766,7 +841,8 @@ export const UserOrderByRelevanceFieldEnum = {
   email: 'email',
   username: 'username',
   password: 'password',
-  avatar: 'avatar'
+  avatar: 'avatar',
+  totpSecret: 'totpSecret'
 } as const
 
 export type UserOrderByRelevanceFieldEnum = (typeof UserOrderByRelevanceFieldEnum)[keyof typeof UserOrderByRelevanceFieldEnum]

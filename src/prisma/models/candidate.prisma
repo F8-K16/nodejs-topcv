@@ -7,8 +7,8 @@ model Candidate {
   candidateCategories CandidateCategory[]
   preference          CandidatePreference?
   candidateSkills     CandidateSkill[]
-  district            District?            @relation(fields: [districtId], references: [id])
-  province            Province?            @relation(fields: [provinceId], references: [id])
+  district            District?            @relation(fields: [districtId], references: [id], onDelete: SetNull)
+  province            Province?            @relation(fields: [provinceId], references: [id], onDelete: SetNull)
   user                User                 @relation(fields: [userId], references: [id])
   companyFollows      CompanyFollow[]
   resumes             Resume[]

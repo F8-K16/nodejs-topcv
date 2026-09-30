@@ -80,12 +80,12 @@ export type PrismaVersion = {
 }
 
 /**
- * Prisma Client JS version: 7.5.0
- * Query Engine version: 280c870be64f457428992c43c1f6d557fab6e29e
+ * Prisma Client JS version: 7.10.0
+ * Query Engine version: 0edf323efd1d98336f3f0a68684b56f689b900d3
  */
 export const prismaVersion: PrismaVersion = {
-  client: "7.5.0",
-  engine: "280c870be64f457428992c43c1f6d557fab6e29e"
+  client: "7.10.0",
+  engine: "0edf323efd1d98336f3f0a68684b56f689b900d3"
 }
 
 /**
@@ -156,6 +156,19 @@ export type Subset<T, U> = {
 };
 
 /**
+ * Resolved type of the argument passed to the `PrismaClient` constructor.
+ *
+ * When called without a narrower options type (the common case), this resolves
+ * to `PrismaClientOptions` directly, which produces a clear TypeScript error
+ * message (`not assignable to parameter of type 'PrismaClientOptions'`) when
+ * the argument is missing or incomplete. When the user supplies a narrower
+ * options type (e.g. via a literal), it falls back to `Subset` to keep
+ * filtering out unknown properties.
+ */
+export type PrismaClientConstructorArgs<Options extends PrismaClientOptions> =
+  [PrismaClientOptions] extends [Options] ? PrismaClientOptions : Subset<Options, PrismaClientOptions>;
+
+/**
  * SelectSubset
  * @desc From `T` pick properties that exist in `U`. Simple version of Intersection.
  * Additionally, it validates, if both select and include are present. If the case, it errors.
@@ -187,7 +200,7 @@ type Without<T, U> = { [P in Exclude<keyof T, keyof U>]?: never };
 export type XOR<T, U> =
   T extends object ?
   U extends object ?
-    (Without<T, U> & U) | (Without<U, T> & T)
+    ((Without<T, U> & U) | (Without<U, T> & T)) & object
   : U : T
 
 
@@ -387,6 +400,7 @@ export const ModelName = {
   Action: 'Action',
   Application: 'Application',
   AuditLog: 'AuditLog',
+  BlogPost: 'BlogPost',
   Candidate: 'Candidate',
   CandidatePreference: 'CandidatePreference',
   CandidateSkill: 'CandidateSkill',
@@ -398,11 +412,13 @@ export const ModelName = {
   Company: 'Company',
   CompanyCategory: 'CompanyCategory',
   CompanyFollow: 'CompanyFollow',
+  ContactMessage: 'ContactMessage',
   Cv: 'Cv',
   CvTemplate: 'CvTemplate',
   District: 'District',
   Employer: 'Employer',
   Job: 'Job',
+  JobViewSource: 'JobViewSource',
   Module: 'Module',
   ModuleAction: 'ModuleAction',
   Notification: 'Notification',
@@ -434,7 +450,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "action" | "application" | "auditLog" | "candidate" | "candidatePreference" | "candidateSkill" | "candidateCategory" | "category" | "categoryParent" | "chatConversation" | "chatMessage" | "company" | "companyCategory" | "companyFollow" | "cv" | "cvTemplate" | "district" | "employer" | "job" | "module" | "moduleAction" | "notification" | "permission" | "province" | "resume" | "role" | "rolePermission" | "savedJob" | "siteSettings" | "skill" | "jobSkill" | "user" | "userPermission" | "userPhone" | "userRole"
+    modelProps: "action" | "application" | "auditLog" | "blogPost" | "candidate" | "candidatePreference" | "candidateSkill" | "candidateCategory" | "category" | "categoryParent" | "chatConversation" | "chatMessage" | "company" | "companyCategory" | "companyFollow" | "contactMessage" | "cv" | "cvTemplate" | "district" | "employer" | "job" | "jobViewSource" | "module" | "moduleAction" | "notification" | "permission" | "province" | "resume" | "role" | "rolePermission" | "savedJob" | "siteSettings" | "skill" | "jobSkill" | "user" | "userPermission" | "userPhone" | "userRole"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -633,6 +649,72 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.AuditLogCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.AuditLogCountAggregateOutputType> | number
+        }
+      }
+    }
+    BlogPost: {
+      payload: Prisma.$BlogPostPayload<ExtArgs>
+      fields: Prisma.BlogPostFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.BlogPostFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BlogPostPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.BlogPostFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BlogPostPayload>
+        }
+        findFirst: {
+          args: Prisma.BlogPostFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BlogPostPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.BlogPostFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BlogPostPayload>
+        }
+        findMany: {
+          args: Prisma.BlogPostFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BlogPostPayload>[]
+        }
+        create: {
+          args: Prisma.BlogPostCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BlogPostPayload>
+        }
+        createMany: {
+          args: Prisma.BlogPostCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        delete: {
+          args: Prisma.BlogPostDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BlogPostPayload>
+        }
+        update: {
+          args: Prisma.BlogPostUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BlogPostPayload>
+        }
+        deleteMany: {
+          args: Prisma.BlogPostDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.BlogPostUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        upsert: {
+          args: Prisma.BlogPostUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BlogPostPayload>
+        }
+        aggregate: {
+          args: Prisma.BlogPostAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateBlogPost>
+        }
+        groupBy: {
+          args: Prisma.BlogPostGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.BlogPostGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.BlogPostCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.BlogPostCountAggregateOutputType> | number
         }
       }
     }
@@ -1362,6 +1444,72 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    ContactMessage: {
+      payload: Prisma.$ContactMessagePayload<ExtArgs>
+      fields: Prisma.ContactMessageFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ContactMessageFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContactMessagePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ContactMessageFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContactMessagePayload>
+        }
+        findFirst: {
+          args: Prisma.ContactMessageFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContactMessagePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ContactMessageFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContactMessagePayload>
+        }
+        findMany: {
+          args: Prisma.ContactMessageFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContactMessagePayload>[]
+        }
+        create: {
+          args: Prisma.ContactMessageCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContactMessagePayload>
+        }
+        createMany: {
+          args: Prisma.ContactMessageCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        delete: {
+          args: Prisma.ContactMessageDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContactMessagePayload>
+        }
+        update: {
+          args: Prisma.ContactMessageUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContactMessagePayload>
+        }
+        deleteMany: {
+          args: Prisma.ContactMessageDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ContactMessageUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        upsert: {
+          args: Prisma.ContactMessageUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContactMessagePayload>
+        }
+        aggregate: {
+          args: Prisma.ContactMessageAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateContactMessage>
+        }
+        groupBy: {
+          args: Prisma.ContactMessageGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ContactMessageGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ContactMessageCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ContactMessageCountAggregateOutputType> | number
+        }
+      }
+    }
     Cv: {
       payload: Prisma.$CvPayload<ExtArgs>
       fields: Prisma.CvFieldRefs
@@ -1689,6 +1837,72 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.JobCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.JobCountAggregateOutputType> | number
+        }
+      }
+    }
+    JobViewSource: {
+      payload: Prisma.$JobViewSourcePayload<ExtArgs>
+      fields: Prisma.JobViewSourceFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.JobViewSourceFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobViewSourcePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.JobViewSourceFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobViewSourcePayload>
+        }
+        findFirst: {
+          args: Prisma.JobViewSourceFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobViewSourcePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.JobViewSourceFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobViewSourcePayload>
+        }
+        findMany: {
+          args: Prisma.JobViewSourceFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobViewSourcePayload>[]
+        }
+        create: {
+          args: Prisma.JobViewSourceCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobViewSourcePayload>
+        }
+        createMany: {
+          args: Prisma.JobViewSourceCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        delete: {
+          args: Prisma.JobViewSourceDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobViewSourcePayload>
+        }
+        update: {
+          args: Prisma.JobViewSourceUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobViewSourcePayload>
+        }
+        deleteMany: {
+          args: Prisma.JobViewSourceDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.JobViewSourceUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        upsert: {
+          args: Prisma.JobViewSourceUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobViewSourcePayload>
+        }
+        aggregate: {
+          args: Prisma.JobViewSourceAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateJobViewSource>
+        }
+        groupBy: {
+          args: Prisma.JobViewSourceGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.JobViewSourceGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.JobViewSourceCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.JobViewSourceCountAggregateOutputType> | number
         }
       }
     }
@@ -2834,6 +3048,23 @@ export const AuditLogScalarFieldEnum = {
 export type AuditLogScalarFieldEnum = (typeof AuditLogScalarFieldEnum)[keyof typeof AuditLogScalarFieldEnum]
 
 
+export const BlogPostScalarFieldEnum = {
+  id: 'id',
+  slug: 'slug',
+  title: 'title',
+  excerpt: 'excerpt',
+  content: 'content',
+  coverUrl: 'coverUrl',
+  publishedAt: 'publishedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt',
+  authorId: 'authorId'
+} as const
+
+export type BlogPostScalarFieldEnum = (typeof BlogPostScalarFieldEnum)[keyof typeof BlogPostScalarFieldEnum]
+
+
 export const CandidateScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
@@ -2932,6 +3163,7 @@ export type ChatMessageScalarFieldEnum = (typeof ChatMessageScalarFieldEnum)[key
 export const CompanyScalarFieldEnum = {
   id: 'id',
   name: 'name',
+  slug: 'slug',
   description: 'description',
   logo: 'logo',
   website: 'website',
@@ -2956,13 +3188,24 @@ export type CompanyCategoryScalarFieldEnum = (typeof CompanyCategoryScalarFieldE
 
 
 export const CompanyFollowScalarFieldEnum = {
-  id: 'id',
   candidateId: 'candidateId',
   companyId: 'companyId',
   createdAt: 'createdAt'
 } as const
 
 export type CompanyFollowScalarFieldEnum = (typeof CompanyFollowScalarFieldEnum)[keyof typeof CompanyFollowScalarFieldEnum]
+
+
+export const ContactMessageScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  email: 'email',
+  subject: 'subject',
+  message: 'message',
+  createdAt: 'createdAt'
+} as const
+
+export type ContactMessageScalarFieldEnum = (typeof ContactMessageScalarFieldEnum)[keyof typeof ContactMessageScalarFieldEnum]
 
 
 export const CvScalarFieldEnum = {
@@ -2974,7 +3217,8 @@ export const CvScalarFieldEnum = {
   content: 'content',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
-  lastEditedAt: 'lastEditedAt'
+  lastEditedAt: 'lastEditedAt',
+  deletedAt: 'deletedAt'
 } as const
 
 export type CvScalarFieldEnum = (typeof CvScalarFieldEnum)[keyof typeof CvScalarFieldEnum]
@@ -2986,7 +3230,7 @@ export const CvTemplateScalarFieldEnum = {
   description: 'description',
   thumbnailUrl: 'thumbnailUrl',
   templateData: 'templateData',
-  isActive: 'isActive',
+  status: 'status',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   deletedAt: 'deletedAt'
@@ -3020,6 +3264,7 @@ export type EmployerScalarFieldEnum = (typeof EmployerScalarFieldEnum)[keyof typ
 export const JobScalarFieldEnum = {
   id: 'id',
   title: 'title',
+  slug: 'slug',
   description: 'description',
   minSalary: 'minSalary',
   maxSalary: 'maxSalary',
@@ -3040,6 +3285,16 @@ export const JobScalarFieldEnum = {
 } as const
 
 export type JobScalarFieldEnum = (typeof JobScalarFieldEnum)[keyof typeof JobScalarFieldEnum]
+
+
+export const JobViewSourceScalarFieldEnum = {
+  id: 'id',
+  jobId: 'jobId',
+  source: 'source',
+  views: 'views'
+} as const
+
+export type JobViewSourceScalarFieldEnum = (typeof JobViewSourceScalarFieldEnum)[keyof typeof JobViewSourceScalarFieldEnum]
 
 
 export const ModuleScalarFieldEnum = {
@@ -3134,7 +3389,6 @@ export type RolePermissionScalarFieldEnum = (typeof RolePermissionScalarFieldEnu
 
 
 export const SavedJobScalarFieldEnum = {
-  id: 'id',
   candidateId: 'candidateId',
   jobId: 'jobId',
   createdAt: 'createdAt'
@@ -3193,6 +3447,8 @@ export const UserScalarFieldEnum = {
   deletedAt: 'deletedAt',
   isVerified: 'isVerified',
   isBlocked: 'isBlocked',
+  totpSecret: 'totpSecret',
+  totpEnabled: 'totpEnabled',
   receiveEmailNotifications: 'receiveEmailNotifications'
 } as const
 
@@ -3309,6 +3565,17 @@ export const AuditLogOrderByRelevanceFieldEnum = {
 export type AuditLogOrderByRelevanceFieldEnum = (typeof AuditLogOrderByRelevanceFieldEnum)[keyof typeof AuditLogOrderByRelevanceFieldEnum]
 
 
+export const BlogPostOrderByRelevanceFieldEnum = {
+  slug: 'slug',
+  title: 'title',
+  excerpt: 'excerpt',
+  content: 'content',
+  coverUrl: 'coverUrl'
+} as const
+
+export type BlogPostOrderByRelevanceFieldEnum = (typeof BlogPostOrderByRelevanceFieldEnum)[keyof typeof BlogPostOrderByRelevanceFieldEnum]
+
+
 export const CategoryOrderByRelevanceFieldEnum = {
   name: 'name',
   slug: 'slug'
@@ -3335,6 +3602,7 @@ export type ChatMessageOrderByRelevanceFieldEnum = (typeof ChatMessageOrderByRel
 
 export const CompanyOrderByRelevanceFieldEnum = {
   name: 'name',
+  slug: 'slug',
   description: 'description',
   logo: 'logo',
   website: 'website',
@@ -3342,6 +3610,16 @@ export const CompanyOrderByRelevanceFieldEnum = {
 } as const
 
 export type CompanyOrderByRelevanceFieldEnum = (typeof CompanyOrderByRelevanceFieldEnum)[keyof typeof CompanyOrderByRelevanceFieldEnum]
+
+
+export const ContactMessageOrderByRelevanceFieldEnum = {
+  name: 'name',
+  email: 'email',
+  subject: 'subject',
+  message: 'message'
+} as const
+
+export type ContactMessageOrderByRelevanceFieldEnum = (typeof ContactMessageOrderByRelevanceFieldEnum)[keyof typeof ContactMessageOrderByRelevanceFieldEnum]
 
 
 export const CvOrderByRelevanceFieldEnum = {
@@ -3369,11 +3647,19 @@ export type DistrictOrderByRelevanceFieldEnum = (typeof DistrictOrderByRelevance
 
 export const JobOrderByRelevanceFieldEnum = {
   title: 'title',
+  slug: 'slug',
   description: 'description',
   workLocation: 'workLocation'
 } as const
 
 export type JobOrderByRelevanceFieldEnum = (typeof JobOrderByRelevanceFieldEnum)[keyof typeof JobOrderByRelevanceFieldEnum]
+
+
+export const JobViewSourceOrderByRelevanceFieldEnum = {
+  source: 'source'
+} as const
+
+export type JobViewSourceOrderByRelevanceFieldEnum = (typeof JobViewSourceOrderByRelevanceFieldEnum)[keyof typeof JobViewSourceOrderByRelevanceFieldEnum]
 
 
 export const ModuleOrderByRelevanceFieldEnum = {
@@ -3449,7 +3735,8 @@ export const UserOrderByRelevanceFieldEnum = {
   email: 'email',
   username: 'username',
   password: 'password',
-  avatar: 'avatar'
+  avatar: 'avatar',
+  totpSecret: 'totpSecret'
 } as const
 
 export type UserOrderByRelevanceFieldEnum = (typeof UserOrderByRelevanceFieldEnum)[keyof typeof UserOrderByRelevanceFieldEnum]
@@ -3582,19 +3869,10 @@ export type BatchPayload = {
 export const defineExtension = runtime.Extensions.defineExtension as unknown as runtime.Types.Extensions.ExtendsHook<"define", TypeMapCb, runtime.Types.Extensions.DefaultArgs>
 export type DefaultPrismaClient = PrismaClient
 export type ErrorFormat = 'pretty' | 'colorless' | 'minimal'
-export type PrismaClientOptions = ({
-  /**
-   * Instance of a Driver Adapter, e.g., like one provided by `@prisma/adapter-pg`.
-   */
-  adapter: runtime.SqlDriverAdapterFactory
-  accelerateUrl?: never
-} | {
-  /**
-   * Prisma Accelerate URL allowing the client to connect through Accelerate instead of a direct database.
-   */
-  accelerateUrl: string
-  adapter?: never
-}) & {
+/**
+ * Options common to all variants of `PrismaClientOptions`, regardless of whether you connect to your database through a driver adapter or through Prisma Accelerate.
+ */
+export interface PrismaClientBaseOptions {
   /**
    * @default "colorless"
    */
@@ -3665,11 +3943,77 @@ export type PrismaClientOptions = ({
    * ```
    */
   comments?: runtime.SqlCommenterPlugin[]
+  /**
+   * Optional maximum size for the query plan cache. If not provided, a default size will be used.
+   * A value of `0` can be used to disable the cache entirely. A higher cache size can improve
+   * performance for applications that execute a large number of unique queries, while a smaller
+   * cache size can reduce memory usage.
+   * 
+   * @example
+   * ```
+   * const prisma = new PrismaClient({
+   *   adapter,
+   *   queryPlanCacheMaxSize: 100,
+   * })
+   * ```
+   */
+  queryPlanCacheMaxSize?: number
 }
+
+/**
+ * `PrismaClient` options for connecting to your database through Prisma Accelerate instead of a driver adapter.
+ * 
+ * Learn more: https://pris.ly/d/accelerate
+ */
+export interface PrismaClientOptionsWithAccelerateUrl extends PrismaClientBaseOptions {
+  /**
+   * The Prisma Accelerate connection URL. Use this option to connect to your database through Prisma Accelerate instead of using a driver adapter to connect directly.
+   * 
+   * Learn more: https://pris.ly/d/accelerate
+   */
+  accelerateUrl: string
+  adapter?: never
+}
+
+/**
+ * `PrismaClient` options for connecting to your database through a driver adapter. This is the common case in Prisma 7.
+ * 
+ * Learn more: https://pris.ly/d/driver-adapters
+ */
+export interface PrismaClientOptionsWithAdapter extends PrismaClientBaseOptions {
+  /**
+   * A driver adapter that PrismaClient uses to connect to your database, such as the ones provided by `@prisma/adapter-pg`, `@prisma/adapter-libsql`, `@prisma/adapter-planetscale`, etc.
+   * 
+   * A driver adapter is **required** unless you connect to your database through Prisma Accelerate (in which case use `accelerateUrl` instead).
+   * 
+   * Learn more: https://pris.ly/d/driver-adapters
+   * 
+   * @example
+   * ```ts
+   * import { PrismaPg } from '@prisma/adapter-pg'
+   * import { PrismaClient } from './generated/prisma/client'
+   * 
+   * const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL })
+   * const prisma = new PrismaClient({ adapter })
+   * ```
+   */
+  adapter: runtime.SqlDriverAdapterFactory
+  accelerateUrl?: never
+}
+
+/**
+ * Options passed to the `PrismaClient` constructor.
+ * 
+ * A driver adapter (or, alternatively, a Prisma Accelerate URL) is **required**. See {@link PrismaClientOptionsWithAdapter} and {@link PrismaClientOptionsWithAccelerateUrl} for the two variants. All other properties live in {@link PrismaClientBaseOptions} and are optional.
+ * 
+ * Learn more about driver adapters: https://pris.ly/d/driver-adapters
+ */
+export type PrismaClientOptions = PrismaClientOptionsWithAccelerateUrl | PrismaClientOptionsWithAdapter
 export type GlobalOmitConfig = {
   action?: Prisma.ActionOmit
   application?: Prisma.ApplicationOmit
   auditLog?: Prisma.AuditLogOmit
+  blogPost?: Prisma.BlogPostOmit
   candidate?: Prisma.CandidateOmit
   candidatePreference?: Prisma.CandidatePreferenceOmit
   candidateSkill?: Prisma.CandidateSkillOmit
@@ -3681,11 +4025,13 @@ export type GlobalOmitConfig = {
   company?: Prisma.CompanyOmit
   companyCategory?: Prisma.CompanyCategoryOmit
   companyFollow?: Prisma.CompanyFollowOmit
+  contactMessage?: Prisma.ContactMessageOmit
   cv?: Prisma.CvOmit
   cvTemplate?: Prisma.CvTemplateOmit
   district?: Prisma.DistrictOmit
   employer?: Prisma.EmployerOmit
   job?: Prisma.JobOmit
+  jobViewSource?: Prisma.JobViewSourceOmit
   module?: Prisma.ModuleOmit
   moduleAction?: Prisma.ModuleActionOmit
   notification?: Prisma.NotificationOmit

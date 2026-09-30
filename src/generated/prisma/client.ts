@@ -55,6 +55,11 @@ export type Application = Prisma.ApplicationModel
  */
 export type AuditLog = Prisma.AuditLogModel
 /**
+ * Model BlogPost
+ * 
+ */
+export type BlogPost = Prisma.BlogPostModel
+/**
  * Model Candidate
  * 
  */
@@ -110,6 +115,11 @@ export type CompanyCategory = Prisma.CompanyCategoryModel
  */
 export type CompanyFollow = Prisma.CompanyFollowModel
 /**
+ * Model ContactMessage
+ * 
+ */
+export type ContactMessage = Prisma.ContactMessageModel
+/**
  * Model Cv
  * 
  */
@@ -134,6 +144,11 @@ export type Employer = Prisma.EmployerModel
  * 
  */
 export type Job = Prisma.JobModel
+/**
+ * Model JobViewSource
+ * 
+ */
+export type JobViewSource = Prisma.JobViewSourceModel
 /**
  * Model Module
  * 

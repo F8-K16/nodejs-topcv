@@ -1,6 +1,7 @@
 import express from "express";
 
 import { validate } from "../middlewares/validate.middleware";
+import { createSkillSchema } from "../schemas/skill.schema";
 import {
   employerApplicationStatusSchema,
   employerCreateInviteSchema,
@@ -15,7 +16,14 @@ const router = express.Router();
 router.get("/me", employerPortalController.me);
 router.get("/company-members", employerPortalController.companyMembers);
 router.get("/dashboard", employerPortalController.dashboard);
+router.get("/analytics", employerPortalController.analytics);
 router.get("/form-meta", employerPortalController.formMeta);
+router.get("/skills", employerPortalController.listSkills);
+router.post(
+  "/skills",
+  validate(createSkillSchema),
+  employerPortalController.createSkill,
+);
 router.patch(
   "/company",
   validate(employerUpdateCompanySchema),

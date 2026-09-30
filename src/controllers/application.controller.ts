@@ -62,4 +62,20 @@ export const applicationController = {
     const jobIds = await applicationService.getAppliedJobIds(req.user!.id);
     return res.json({ success: true, data: { jobIds } });
   },
+
+  bulkWithdraw: async (req: Request, res: Response) => {
+    const { ids } = req.body as { ids: number[] };
+    const data = await applicationService.withdrawManyAsCandidate(
+      req.user!.id,
+      ids,
+    );
+    return res.json({
+      success: true,
+      message:
+        data.withdrawn > 0
+          ? `Đã rút ${data.withdrawn} đơn đang chờ duyệt`
+          : "Không có đơn chờ duyệt nào được rút",
+      data,
+    });
+  },
 };

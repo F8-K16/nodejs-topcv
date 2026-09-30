@@ -203,7 +203,7 @@ export type DistrictGroupByOutputType = {
   _max: DistrictMaxAggregateOutputType | null
 }
 
-type GetDistrictGroupByPayload<T extends DistrictGroupByArgs> = Prisma.PrismaPromise<
+export type GetDistrictGroupByPayload<T extends DistrictGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<DistrictGroupByOutputType, T['by']> &
       {

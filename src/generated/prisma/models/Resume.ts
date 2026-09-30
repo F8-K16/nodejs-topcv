@@ -210,7 +210,7 @@ export type ResumeGroupByOutputType = {
   _max: ResumeMaxAggregateOutputType | null
 }
 
-type GetResumeGroupByPayload<T extends ResumeGroupByArgs> = Prisma.PrismaPromise<
+export type GetResumeGroupByPayload<T extends ResumeGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<ResumeGroupByOutputType, T['by']> &
       {

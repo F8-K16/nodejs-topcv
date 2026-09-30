@@ -27,33 +27,28 @@ export type AggregateCompanyFollow = {
 }
 
 export type CompanyFollowAvgAggregateOutputType = {
-  id: number | null
   candidateId: number | null
   companyId: number | null
 }
 
 export type CompanyFollowSumAggregateOutputType = {
-  id: number | null
   candidateId: number | null
   companyId: number | null
 }
 
 export type CompanyFollowMinAggregateOutputType = {
-  id: number | null
   candidateId: number | null
   companyId: number | null
   createdAt: Date | null
 }
 
 export type CompanyFollowMaxAggregateOutputType = {
-  id: number | null
   candidateId: number | null
   companyId: number | null
   createdAt: Date | null
 }
 
 export type CompanyFollowCountAggregateOutputType = {
-  id: number
   candidateId: number
   companyId: number
   createdAt: number
@@ -62,33 +57,28 @@ export type CompanyFollowCountAggregateOutputType = {
 
 
 export type CompanyFollowAvgAggregateInputType = {
-  id?: true
   candidateId?: true
   companyId?: true
 }
 
 export type CompanyFollowSumAggregateInputType = {
-  id?: true
   candidateId?: true
   companyId?: true
 }
 
 export type CompanyFollowMinAggregateInputType = {
-  id?: true
   candidateId?: true
   companyId?: true
   createdAt?: true
 }
 
 export type CompanyFollowMaxAggregateInputType = {
-  id?: true
   candidateId?: true
   companyId?: true
   createdAt?: true
 }
 
 export type CompanyFollowCountAggregateInputType = {
-  id?: true
   candidateId?: true
   companyId?: true
   createdAt?: true
@@ -182,7 +172,6 @@ export type CompanyFollowGroupByArgs<ExtArgs extends runtime.Types.Extensions.In
 }
 
 export type CompanyFollowGroupByOutputType = {
-  id: number
   candidateId: number
   companyId: number
   createdAt: Date
@@ -193,7 +182,7 @@ export type CompanyFollowGroupByOutputType = {
   _max: CompanyFollowMaxAggregateOutputType | null
 }
 
-type GetCompanyFollowGroupByPayload<T extends CompanyFollowGroupByArgs> = Prisma.PrismaPromise<
+export type GetCompanyFollowGroupByPayload<T extends CompanyFollowGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<CompanyFollowGroupByOutputType, T['by']> &
       {
@@ -212,7 +201,6 @@ export type CompanyFollowWhereInput = {
   AND?: Prisma.CompanyFollowWhereInput | Prisma.CompanyFollowWhereInput[]
   OR?: Prisma.CompanyFollowWhereInput[]
   NOT?: Prisma.CompanyFollowWhereInput | Prisma.CompanyFollowWhereInput[]
-  id?: Prisma.IntFilter<"CompanyFollow"> | number
   candidateId?: Prisma.IntFilter<"CompanyFollow"> | number
   companyId?: Prisma.IntFilter<"CompanyFollow"> | number
   createdAt?: Prisma.DateTimeFilter<"CompanyFollow"> | Date | string
@@ -221,7 +209,6 @@ export type CompanyFollowWhereInput = {
 }
 
 export type CompanyFollowOrderByWithRelationInput = {
-  id?: Prisma.SortOrder
   candidateId?: Prisma.SortOrder
   companyId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -230,7 +217,6 @@ export type CompanyFollowOrderByWithRelationInput = {
 }
 
 export type CompanyFollowWhereUniqueInput = Prisma.AtLeast<{
-  id?: number
   candidateId_companyId?: Prisma.CompanyFollowCandidateIdCompanyIdCompoundUniqueInput
   AND?: Prisma.CompanyFollowWhereInput | Prisma.CompanyFollowWhereInput[]
   OR?: Prisma.CompanyFollowWhereInput[]
@@ -240,10 +226,9 @@ export type CompanyFollowWhereUniqueInput = Prisma.AtLeast<{
   createdAt?: Prisma.DateTimeFilter<"CompanyFollow"> | Date | string
   candidate?: Prisma.XOR<Prisma.CandidateScalarRelationFilter, Prisma.CandidateWhereInput>
   company?: Prisma.XOR<Prisma.CompanyScalarRelationFilter, Prisma.CompanyWhereInput>
-}, "id" | "candidateId_companyId">
+}, "candidateId_companyId">
 
 export type CompanyFollowOrderByWithAggregationInput = {
-  id?: Prisma.SortOrder
   candidateId?: Prisma.SortOrder
   companyId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -258,7 +243,6 @@ export type CompanyFollowScalarWhereWithAggregatesInput = {
   AND?: Prisma.CompanyFollowScalarWhereWithAggregatesInput | Prisma.CompanyFollowScalarWhereWithAggregatesInput[]
   OR?: Prisma.CompanyFollowScalarWhereWithAggregatesInput[]
   NOT?: Prisma.CompanyFollowScalarWhereWithAggregatesInput | Prisma.CompanyFollowScalarWhereWithAggregatesInput[]
-  id?: Prisma.IntWithAggregatesFilter<"CompanyFollow"> | number
   candidateId?: Prisma.IntWithAggregatesFilter<"CompanyFollow"> | number
   companyId?: Prisma.IntWithAggregatesFilter<"CompanyFollow"> | number
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"CompanyFollow"> | Date | string
@@ -271,7 +255,6 @@ export type CompanyFollowCreateInput = {
 }
 
 export type CompanyFollowUncheckedCreateInput = {
-  id?: number
   candidateId: number
   companyId: number
   createdAt?: Date | string
@@ -284,14 +267,12 @@ export type CompanyFollowUpdateInput = {
 }
 
 export type CompanyFollowUncheckedUpdateInput = {
-  id?: Prisma.IntFieldUpdateOperationsInput | number
   candidateId?: Prisma.IntFieldUpdateOperationsInput | number
   companyId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type CompanyFollowCreateManyInput = {
-  id?: number
   candidateId: number
   companyId: number
   createdAt?: Date | string
@@ -302,7 +283,6 @@ export type CompanyFollowUpdateManyMutationInput = {
 }
 
 export type CompanyFollowUncheckedUpdateManyInput = {
-  id?: Prisma.IntFieldUpdateOperationsInput | number
   candidateId?: Prisma.IntFieldUpdateOperationsInput | number
   companyId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -324,34 +304,29 @@ export type CompanyFollowCandidateIdCompanyIdCompoundUniqueInput = {
 }
 
 export type CompanyFollowCountOrderByAggregateInput = {
-  id?: Prisma.SortOrder
   candidateId?: Prisma.SortOrder
   companyId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
 export type CompanyFollowAvgOrderByAggregateInput = {
-  id?: Prisma.SortOrder
   candidateId?: Prisma.SortOrder
   companyId?: Prisma.SortOrder
 }
 
 export type CompanyFollowMaxOrderByAggregateInput = {
-  id?: Prisma.SortOrder
   candidateId?: Prisma.SortOrder
   companyId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
 export type CompanyFollowMinOrderByAggregateInput = {
-  id?: Prisma.SortOrder
   candidateId?: Prisma.SortOrder
   companyId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
 export type CompanyFollowSumOrderByAggregateInput = {
-  id?: Prisma.SortOrder
   candidateId?: Prisma.SortOrder
   companyId?: Prisma.SortOrder
 }
@@ -446,7 +421,6 @@ export type CompanyFollowCreateWithoutCandidateInput = {
 }
 
 export type CompanyFollowUncheckedCreateWithoutCandidateInput = {
-  id?: number
   companyId: number
   createdAt?: Date | string
 }
@@ -481,7 +455,6 @@ export type CompanyFollowScalarWhereInput = {
   AND?: Prisma.CompanyFollowScalarWhereInput | Prisma.CompanyFollowScalarWhereInput[]
   OR?: Prisma.CompanyFollowScalarWhereInput[]
   NOT?: Prisma.CompanyFollowScalarWhereInput | Prisma.CompanyFollowScalarWhereInput[]
-  id?: Prisma.IntFilter<"CompanyFollow"> | number
   candidateId?: Prisma.IntFilter<"CompanyFollow"> | number
   companyId?: Prisma.IntFilter<"CompanyFollow"> | number
   createdAt?: Prisma.DateTimeFilter<"CompanyFollow"> | Date | string
@@ -493,7 +466,6 @@ export type CompanyFollowCreateWithoutCompanyInput = {
 }
 
 export type CompanyFollowUncheckedCreateWithoutCompanyInput = {
-  id?: number
   candidateId: number
   createdAt?: Date | string
 }
@@ -525,7 +497,6 @@ export type CompanyFollowUpdateManyWithWhereWithoutCompanyInput = {
 }
 
 export type CompanyFollowCreateManyCandidateInput = {
-  id?: number
   companyId: number
   createdAt?: Date | string
 }
@@ -536,19 +507,16 @@ export type CompanyFollowUpdateWithoutCandidateInput = {
 }
 
 export type CompanyFollowUncheckedUpdateWithoutCandidateInput = {
-  id?: Prisma.IntFieldUpdateOperationsInput | number
   companyId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type CompanyFollowUncheckedUpdateManyWithoutCandidateInput = {
-  id?: Prisma.IntFieldUpdateOperationsInput | number
   companyId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type CompanyFollowCreateManyCompanyInput = {
-  id?: number
   candidateId: number
   createdAt?: Date | string
 }
@@ -559,13 +527,11 @@ export type CompanyFollowUpdateWithoutCompanyInput = {
 }
 
 export type CompanyFollowUncheckedUpdateWithoutCompanyInput = {
-  id?: Prisma.IntFieldUpdateOperationsInput | number
   candidateId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type CompanyFollowUncheckedUpdateManyWithoutCompanyInput = {
-  id?: Prisma.IntFieldUpdateOperationsInput | number
   candidateId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -573,7 +539,6 @@ export type CompanyFollowUncheckedUpdateManyWithoutCompanyInput = {
 
 
 export type CompanyFollowSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
-  id?: boolean
   candidateId?: boolean
   companyId?: boolean
   createdAt?: boolean
@@ -584,13 +549,12 @@ export type CompanyFollowSelect<ExtArgs extends runtime.Types.Extensions.Interna
 
 
 export type CompanyFollowSelectScalar = {
-  id?: boolean
   candidateId?: boolean
   companyId?: boolean
   createdAt?: boolean
 }
 
-export type CompanyFollowOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "candidateId" | "companyId" | "createdAt", ExtArgs["result"]["companyFollow"]>
+export type CompanyFollowOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"candidateId" | "companyId" | "createdAt", ExtArgs["result"]["companyFollow"]>
 export type CompanyFollowInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   candidate?: boolean | Prisma.CandidateDefaultArgs<ExtArgs>
   company?: boolean | Prisma.CompanyDefaultArgs<ExtArgs>
@@ -603,7 +567,6 @@ export type $CompanyFollowPayload<ExtArgs extends runtime.Types.Extensions.Inter
     company: Prisma.$CompanyPayload<ExtArgs>
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
-    id: number
     candidateId: number
     companyId: number
     createdAt: Date
@@ -690,8 +653,8 @@ export interface CompanyFollowDelegate<ExtArgs extends runtime.Types.Extensions.
    * // Get first 10 CompanyFollows
    * const companyFollows = await prisma.companyFollow.findMany({ take: 10 })
    * 
-   * // Only select the `id`
-   * const companyFollowWithIdOnly = await prisma.companyFollow.findMany({ select: { id: true } })
+   * // Only select the `candidateId`
+   * const companyFollowWithCandidateIdOnly = await prisma.companyFollow.findMany({ select: { candidateId: true } })
    * 
    */
   findMany<T extends CompanyFollowFindManyArgs>(args?: Prisma.SelectSubset<T, CompanyFollowFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CompanyFollowPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
@@ -978,7 +941,6 @@ export interface Prisma__CompanyFollowClient<T, Null = never, ExtArgs extends ru
  * Fields of the CompanyFollow model
  */
 export interface CompanyFollowFieldRefs {
-  readonly id: Prisma.FieldRef<"CompanyFollow", 'Int'>
   readonly candidateId: Prisma.FieldRef<"CompanyFollow", 'Int'>
   readonly companyId: Prisma.FieldRef<"CompanyFollow", 'Int'>
   readonly createdAt: Prisma.FieldRef<"CompanyFollow", 'DateTime'>

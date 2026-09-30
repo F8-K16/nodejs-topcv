@@ -1,0 +1,11 @@
+model JobViewSource {
+  id     Int    @id @default(autoincrement())
+  jobId  Int
+  source String @db.VarChar(64)
+  views  Int    @default(0)
+  job    Job    @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@unique([jobId, source])
+  @@index([jobId])
+  @@map("job_view_sources")
+}

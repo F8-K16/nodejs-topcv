@@ -19,9 +19,29 @@ export const employerPortalController = {
     res.json(data);
   },
 
+  analytics: async (req: Request, res: Response) => {
+    const data = await employerPortalService.jobAnalytics(req.user!.id);
+    res.json(data);
+  },
+
   formMeta: async (req: Request, res: Response) => {
     const data = await employerPortalService.formMeta(req.user!.id);
     res.json(data);
+  },
+
+  listSkills: async (req: Request, res: Response) => {
+    const search =
+      typeof req.query.search === "string" ? req.query.search : "";
+    const data = await employerPortalService.listSkills(req.user!.id, search);
+    res.json(data);
+  },
+
+  createSkill: async (req: Request, res: Response) => {
+    const data = await employerPortalService.createSkill(
+      req.user!.id,
+      req.body.name,
+    );
+    res.status(201).json(data);
   },
 
   updateCompany: async (req: Request, res: Response) => {
@@ -85,9 +105,19 @@ export const employerPortalController = {
 
   suggestedCandidates: async (req: Request, res: Response) => {
     const limit = req.query.limit ? Number(req.query.limit) : undefined;
+    const page = req.query.page ? Number(req.query.page) : undefined;
+    const jobId = req.query.jobId ? Number(req.query.jobId) : undefined;
+    const provinceId = req.query.provinceId ? Number(req.query.provinceId) : undefined;
+    const experienceLevel = req.query.experienceLevel ? String(req.query.experienceLevel) : undefined;
+    const optsArg: Parameters<typeof employerPortalService.getSuggestedCandidates>[1] = {};
+    if (Number.isFinite(limit) && limit != null) optsArg.limit = limit;
+    if (Number.isFinite(page) && page != null) optsArg.page = page;
+    if (Number.isFinite(jobId) && jobId != null) optsArg.jobId = jobId;
+    if (Number.isFinite(provinceId) && provinceId != null) optsArg.provinceId = provinceId;
+    if (experienceLevel) optsArg.experienceLevel = experienceLevel;
     const data = await employerPortalService.getSuggestedCandidates(
       req.user!.id,
-      Number.isFinite(limit) ? limit : undefined,
+      optsArg,
     );
     res.json(data);
   },

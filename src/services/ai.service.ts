@@ -102,6 +102,7 @@ async function geminiGenerateContent(
   prompt: string,
   signal: AbortSignal,
   temperatureOverride?: number,
+  maxOutputTokens?: number,
 ): Promise<Response> {
   const temperature =
     typeof temperatureOverride === "number" &&
@@ -118,6 +119,12 @@ async function geminiGenerateContent(
       generationConfig: {
         temperature,
         responseMimeType: "application/json",
+        // Chặn chi phí bất thường nếu model trả về output dài hơn dự kiến —
+        // mọi endpoint chỉ cần một JSON ngắn nên giới hạn này an toàn.
+        maxOutputTokens:
+          typeof maxOutputTokens === "number" && maxOutputTokens > 0
+            ? Math.trunc(maxOutputTokens)
+            : 1024,
       },
       contents: [
         {
@@ -429,7 +436,7 @@ function extractJsonObject(text: string): unknown {
 
 async function callGeminiJson(
   prompt: string,
-  opts?: { timeoutMs?: number; temperature?: number },
+  opts?: { timeoutMs?: number; temperature?: number; maxOutputTokens?: number },
 ): Promise<{
   parsed: unknown;
   model: string;
@@ -524,6 +531,7 @@ async function callGeminiJson(
         prompt,
         controller.signal,
         opts?.temperature,
+        opts?.maxOutputTokens,
       );
     } catch (e) {
       const msg =
@@ -938,7 +946,7 @@ async function extractResumeTextForCandidate(userId: number, resumeId: number) {
   const cvId = parseSharedCvIdFromResumeUrl(resume.fileUrl);
   if (cvId != null) {
     const cv = await prisma.cv.findFirst({
-      where: { id: cvId, userId },
+      where: { id: cvId, userId, deletedAt: null },
       select: { id: true, title: true, content: true },
     });
     if (!cv) {
@@ -1237,7 +1245,10 @@ export const aiService = {
       env.CACHE_TTL_AI_CV_SUGGEST_SEC,
       async () => {
         const prompt = buildSummaryPrompt(payload, jobSetupBrief);
-        const { parsed } = await callGeminiJson(prompt, { temperature: 0.66 });
+        const { parsed } = await callGeminiJson(prompt, {
+          temperature: 0.66,
+          maxOutputTokens: 700,
+        });
         return ensureSuggestions(parsed);
       },
       { lockTtlSec: 20, waitMs: 200, waitTries: 10 },
@@ -1269,7 +1280,10 @@ export const aiService = {
       env.CACHE_TTL_AI_CV_SUGGEST_SEC,
       async () => {
         const prompt = buildCoverLetterPrompt(payload);
-        const { parsed } = await callGeminiJson(prompt, { temperature: 0.72 });
+        const { parsed } = await callGeminiJson(prompt, {
+          temperature: 0.72,
+          maxOutputTokens: 900,
+        });
         return ensureCoverLetter(parsed);
       },
       { lockTtlSec: 25, waitMs: 250, waitTries: 12 },
@@ -1295,7 +1309,10 @@ export const aiService = {
       env.CACHE_TTL_AI_CV_SUGGEST_SEC,
       async () => {
         const prompt = buildJobQuestionsPrompt(payload);
-        const { parsed } = await callGeminiJson(prompt, { temperature: 0.35 });
+        const { parsed } = await callGeminiJson(prompt, {
+          temperature: 0.35,
+          maxOutputTokens: 500,
+        });
         return ensureSuggestions(parsed);
       },
       { lockTtlSec: 20, waitMs: 200, waitTries: 10 },
@@ -1309,28 +1326,31 @@ export const aiService = {
     if (!Number.isFinite(userId) || userId <= 0) {
       throw new HttpException("Unauthorized", 401, "UNAUTHORIZED");
     }
-    const jobs = payload.jobs.slice(0, 40);
+    // Rerank là lớp "làm đẹp thêm" trên bảng xếp hạng heuristic đã có sẵn —
+    // cho phép tắt riêng tính năng này (rẻ tiền hơn tắt cả AI_ENABLED) khi
+    // cần cắt chi phí nhanh mà vẫn giữ các tính năng AI có giá trị cao hơn
+    // (gợi ý CV, cover letter, review CV) hoạt động.
+    if (!env.AI_JOBS_RERANK_ENABLED) return [];
+
+    // Chỉ gửi một lượng nhỏ job đầu bảng cho AI: người dùng chủ yếu xem
+    // trang đầu, gửi nhiều hơn chỉ tốn token mà không đổi trải nghiệm.
+    const jobs = payload.jobs.slice(0, 24);
     if (jobs.length === 0) return [];
 
+    // Cache theo (ứng viên + preferences + NGÀY) — KHÔNG theo danh sách job
+    // hiện tại. Tin tuyển dụng thay đổi liên tục nên nếu cache khớp theo
+    // job pool, gần như mỗi lượt tải trang đều là cache-miss và gọi Gemini
+    // mới. Khoá theo ngày đảm bảo mỗi ứng viên tối đa 1 lần gọi AI/ngày,
+    // bất kể họ tải lại trang "Gợi ý việc làm" hay trang chủ bao nhiêu lần.
+    const dayBucket = new Date().toISOString().slice(0, 10);
     const fingerprint = stableCacheHash({
+      day: dayBucket,
       candidate: payload.candidate,
-      jobs: jobs.map((j) => ({
-        id: j.id,
-        title: j.title,
-        category: j.category,
-        location: j.location,
-        minSalary: j.minSalary,
-        maxSalary: j.maxSalary,
-        jobType: j.jobType,
-        experienceLevel: j.experienceLevel,
-        skills: j.skills,
-        isFeatured: j.isFeatured,
-      })),
     });
     const ck = CacheKeys.aiJobsRerank(userId, fingerprint);
     return cacheGetOrSetJsonWithLock(
       ck,
-      env.CACHE_TTL_AI_CV_SUGGEST_SEC,
+      env.CACHE_TTL_AI_JOBS_RERANK_SEC,
       async () => {
         const prompt = buildJobsRerankPrompt({
           candidate: payload.candidate,
@@ -1339,6 +1359,7 @@ export const aiService = {
         const { parsed } = await callGeminiJson(prompt, {
           timeoutMs: 20_000,
           temperature: 0.18,
+          maxOutputTokens: 300,
         });
         const ids = ensureJobIds(parsed);
         const allowed = new Set(jobs.map((j) => j.id));
@@ -1409,6 +1430,7 @@ export const aiService = {
         const { parsed } = await callGeminiJson(prompt, {
           timeoutMs: 25_000,
           temperature: 0.22,
+          maxOutputTokens: 1100,
         });
         return ensureCvReviewJob(parsed);
       },
@@ -1500,6 +1522,7 @@ export const aiService = {
         const { parsed, model } = await callGeminiJson(prompt, {
           timeoutMs: 25_000,
           temperature: 0.2,
+          maxOutputTokens: 350,
         });
 
         if (!parsed || typeof parsed !== "object") {

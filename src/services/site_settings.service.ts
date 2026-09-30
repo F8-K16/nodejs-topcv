@@ -4,7 +4,7 @@ import type { Prisma, SiteSettings } from "../generated/prisma/client";
 import {
   CacheKeys,
   cacheGetJson,
-  cacheSetJsonPersistent,
+  cacheSetJson,
   invalidateSiteSettingsCache,
 } from "../utils/cache";
 
@@ -30,7 +30,7 @@ export const siteSettingsService = {
         data: { id: 1, siteName: "Job Portal" },
       });
     }
-    await cacheSetJsonPersistent(CacheKeys.siteSettings, row);
+    await cacheSetJson(CacheKeys.siteSettings, row, 300);
     return row;
   },
 
@@ -45,7 +45,7 @@ export const siteSettingsService = {
     if (!row) {
       throw new HttpException("Không thể cập nhật cài đặt", 500);
     }
-    await cacheSetJsonPersistent(CacheKeys.siteSettings, row);
+    await cacheSetJson(CacheKeys.siteSettings, row, 300);
     return row;
   },
 
