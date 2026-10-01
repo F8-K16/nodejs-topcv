@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 import { ConnectionOptions, Job, Queue, Worker } from "bullmq";
 import IORedis from "ioredis";
 import { env } from "../config/env";

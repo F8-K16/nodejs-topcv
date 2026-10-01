@@ -4,9 +4,20 @@ on:
   push:
   pull_request:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  test:
+  check:
+    name: Lint, typecheck, test
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # Push trên cùng repo đã chạy CI. pull_request chỉ cần cho PR từ fork.
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -18,11 +29,13 @@ jobs:
           cache: pnpm
       - name: Install
         run: pnpm install --frozen-lockfile
+      - name: Lint
+        run: pnpm lint
       - name: Generate Prisma client
         run: pnpm exec prisma generate
         env:
           DATABASE_URL: mysql://ci:ci@127.0.0.1:3306/ci
+      - name: Typecheck
+        run: pnpm typecheck
       - name: Test
         run: pnpm test
-      - name: Typecheck
-        run: pnpm exec tsc --noEmit --pretty false --declaration false --declarationMap false

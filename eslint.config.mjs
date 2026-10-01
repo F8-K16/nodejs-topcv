@@ -9,7 +9,17 @@ export default defineConfig(
   tseslint.configs.recommended,
   {
     rules: {
-      "no-unused-vars": "error",
+      // Base rule không hiểu TypeScript và báo trùng với rule bên dưới.
+      "no-unused-vars": "off",
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        {
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: "^_",
+          ignoreRestSiblings: true,
+        },
+      ],
       "no-console": "warn",
       "@typescript-eslint/no-explicit-any": "error",
       "no-undef": "off",

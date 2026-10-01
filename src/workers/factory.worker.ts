@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 import { Job } from "bullmq";
 import { bullMq } from "../utils/bullmq";
 import { logger } from "../utils/logger";

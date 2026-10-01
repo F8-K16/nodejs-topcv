@@ -1,5 +1,3 @@
-/* eslint-disable no-unused-vars */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { createHash, randomBytes } from "node:crypto";
 
 import { Prisma } from "../generated/prisma/client";

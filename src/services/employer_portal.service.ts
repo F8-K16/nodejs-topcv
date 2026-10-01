@@ -967,7 +967,7 @@ export const employerPortalService = {
     const total = scored.length;
     const totalPages = Math.max(1, Math.ceil(total / limit));
     const skip = (page - 1) * limit;
-    const items = scored.slice(skip, skip + limit).map(({ score: _s, ...rest }) => rest);
+    const items = scored.slice(skip, skip + limit).map(({ score, ...rest }) => rest);
 
     return {
       items,

@@ -19,7 +19,6 @@ type TransactionDenyList =
 export type PrismaTransactionClient = Omit<typeof prisma, TransactionDenyList>;
 
 const prismaTransaction = <T>(
-  // eslint-disable-next-line no-unused-vars
   fn: (...args: [PrismaTransactionClient]) => Promise<T>,
   options?: Parameters<typeof prisma.$transaction>[1],
 ): Promise<T> => {

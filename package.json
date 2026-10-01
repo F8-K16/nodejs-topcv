@@ -14,6 +14,7 @@
     "start:worker": "node dist/workers/index.worker.js",
     "lint": "eslint \"src/**/*.ts\"",
     "lint:fix": "eslint \"src/**/*.ts\" --fix",
+    "typecheck": "tsc --noEmit --pretty false --declaration false --declarationMap false",
     "reindex:jobs": "ts-node src/scripts/reindex-jobs.ts",
     "generate:fake-data": "ts-node src/scripts/generate-fake-data.ts",
     "import:topcv": "ts-node src/scripts/import-topcv-companies.ts",
@@ -82,5 +83,13 @@
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.54.0",
     "vitest": "^4.1.5"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@prisma/engines",
+      "prisma",
+      "bcrypt",
+      "msgpackr-extract"
+    ]
   }
 }

@@ -1,5 +1,3 @@
-/* eslint-disable no-unused-vars */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Job } from "bullmq";
 import { sendMailTemplate } from "../utils/mail";
 import { emailDigestService } from "../services/email_digest.service";

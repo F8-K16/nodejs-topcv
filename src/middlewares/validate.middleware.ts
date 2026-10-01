@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 import { NextFunction, Request, Response } from "express";
 import { z } from "zod";
 import { sendError } from "../utils/response";

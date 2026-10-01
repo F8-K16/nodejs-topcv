@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 import type { Server as HttpServer } from "http";
 import { Server } from "socket.io";
 
