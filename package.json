@@ -14,7 +14,7 @@
     "start:worker": "node dist/workers/index.worker.js",
     "lint": "eslint \"src/**/*.ts\"",
     "lint:fix": "eslint \"src/**/*.ts\" --fix",
-    "typecheck": "tsc --noEmit --pretty false --declaration false --declarationMap false",
+    "typecheck": "tsc --noEmit --pretty false",
     "reindex:jobs": "ts-node src/scripts/reindex-jobs.ts",
     "generate:fake-data": "ts-node src/scripts/generate-fake-data.ts",
     "import:topcv": "ts-node src/scripts/import-topcv-companies.ts",
