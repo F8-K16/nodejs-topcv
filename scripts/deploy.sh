@@ -17,8 +17,17 @@ if ! command -v node >/dev/null 2>&1; then
 fi
 
 if ! command -v pnpm >/dev/null 2>&1; then
-  corepack enable
-  corepack prepare pnpm@9 --activate
+  if command -v corepack >/dev/null 2>&1; then
+    corepack enable
+    corepack prepare pnpm@9 --activate
+  elif command -v npm >/dev/null 2>&1; then
+    # Bản Node từ apt/Node 25+ không kèm corepack.
+    npm install -g pnpm@9
+  else
+    echo "Chưa có pnpm. Trên VPS chạy một lần: npm install -g pnpm@9" >&2
+    exit 1
+  fi
+  hash -r
 fi
 
 if ! command -v pm2 >/dev/null 2>&1; then
