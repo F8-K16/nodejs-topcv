@@ -11,23 +11,34 @@ if [[ ! -f .env ]]; then
   exit 1
 fi
 
+# SSH của GitHub Actions là bash không tương tác nên không đọc .bashrc,
+# và vì vậy không nạp nvm. pnpm đang nằm trong bin của nvm, ngoài sudo secure_path.
+export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
+if [[ -s "$NVM_DIR/nvm.sh" ]]; then
+  set +eu
+  # shellcheck disable=SC1091
+  . "$NVM_DIR/nvm.sh"
+  set -eu
+fi
+
+if ! command -v pnpm >/dev/null 2>&1; then
+  if [[ -z "${PNPM_HOME:-}" && -f "$HOME/.bashrc" ]]; then
+    PNPM_HOME="$(sed -n 's/^export PNPM_HOME="\(.*\)"/\1/p' "$HOME/.bashrc" | head -1)"
+  fi
+  export PNPM_HOME="${PNPM_HOME:-$HOME/.local/share/pnpm}"
+  export PATH="$PNPM_HOME:$HOME/.local/bin:$PATH"
+fi
+hash -r
+
 if ! command -v node >/dev/null 2>&1; then
-  echo "Chưa cài Node.js 22 trên VPS." >&2
+  echo "Chưa thấy node. Đã nạp nvm tại $NVM_DIR." >&2
   exit 1
 fi
 
 if ! command -v pnpm >/dev/null 2>&1; then
-  if command -v corepack >/dev/null 2>&1; then
-    corepack enable
-    corepack prepare pnpm@9 --activate
-  elif command -v npm >/dev/null 2>&1; then
-    # Bản Node từ apt/Node 25+ không kèm corepack.
-    npm install -g pnpm@9
-  else
-    echo "Chưa có pnpm. Trên VPS chạy một lần: npm install -g pnpm@9" >&2
-    exit 1
-  fi
-  hash -r
+  echo "Không thấy pnpm sau khi nạp nvm ($NVM_DIR)." >&2
+  echo "Chạy deploy bằng đúng user đã cài pnpm, không dùng sudo." >&2
+  exit 1
 fi
 
 if ! command -v pm2 >/dev/null 2>&1; then
