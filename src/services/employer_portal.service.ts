@@ -757,11 +757,28 @@ export const employerPortalService = {
 
     const page = Math.max(1, Number(opts.page) || 1);
     const limit = Math.min(Math.max(1, Number(opts.limit) || 20), 50);
-    const POOL = 200; // candidates to score before pagination
+    const POOL = 400;
+    const MIN_SCORE = 12;
 
-    // ── Resolve job context (specific job or all approved jobs of company) ──
+    const empty = {
+      items: [] as Array<{
+        candidateId: number;
+        user: { id: number; username: string; email: string; avatar: string | null };
+        province: { name: string } | null;
+        district: { name: string } | null;
+        reason: "category_match" | "skill_match" | "multi_match";
+        matchedSkillCount: number;
+        matchedCategoryCount: number;
+        matchedJob: { id: number; title: string };
+        hint: string;
+      }>,
+      pagination: { total: 0, page, limit, totalPages: 1 },
+      context: { jobCount: 0, categoryIds: [] as number[], skillCount: 0 },
+    };
+
     type JobContext = {
       id: number;
+      title: string;
       categoryId: number;
       jobType: string;
       experienceLevel: string;
@@ -769,6 +786,25 @@ export const employerPortalService = {
       districtId: number | null;
       skillIds: number[];
     };
+
+    const toContext = (job: {
+      id: number;
+      title: string;
+      categoryId: number;
+      jobType: string;
+      experienceLevel: string;
+      jobSkills: { skillId: number }[];
+      company: { provinceId: number | null; districtId: number | null };
+    }): JobContext => ({
+      id: job.id,
+      title: job.title,
+      categoryId: job.categoryId,
+      jobType: String(job.jobType),
+      experienceLevel: String(job.experienceLevel),
+      provinceId: job.company.provinceId,
+      districtId: job.company.districtId,
+      skillIds: job.jobSkills.map((s) => s.skillId),
+    });
 
     let jobContexts: JobContext[] = [];
     if (opts.jobId) {
@@ -780,20 +816,9 @@ export const employerPortalService = {
         },
         include: { jobSkills: { select: { skillId: true } }, company: { select: { provinceId: true, districtId: true } } },
       });
-      if (job) {
-        jobContexts = [{
-          id: job.id,
-          categoryId: job.categoryId,
-          jobType: String(job.jobType),
-          experienceLevel: String(job.experienceLevel),
-          provinceId: job.company.provinceId,
-          districtId: job.company.districtId,
-          skillIds: job.jobSkills.map((s) => s.skillId),
-        }];
-      }
-    }
-
-    if (!jobContexts.length) {
+      if (!job) return empty;
+      jobContexts = [toContext(job)];
+    } else {
       const jobs = await prisma.job.findMany({
         where: {
           companyId,
@@ -802,33 +827,21 @@ export const employerPortalService = {
         },
         include: { jobSkills: { select: { skillId: true } }, company: { select: { provinceId: true, districtId: true } } },
         orderBy: { createdAt: "desc" },
-        take: 10,
+        take: 20,
       });
-      jobContexts = jobs.map((j) => ({
-        id: j.id,
-        categoryId: j.categoryId,
-        jobType: String(j.jobType),
-        experienceLevel: String(j.experienceLevel),
-        provinceId: j.company.provinceId,
-        districtId: j.company.districtId,
-        skillIds: j.jobSkills.map((s) => s.skillId),
-      }));
+      jobContexts = jobs.map(toContext);
     }
 
-    // Sets for fast lookup
+    if (!jobContexts.length) return empty;
+
     const allCategoryIds = [...new Set(jobContexts.map((j) => j.categoryId))];
     const allSkillIds = [...new Set(jobContexts.flatMap((j) => j.skillIds))];
-    const allProvinceIds = [...new Set(jobContexts.map((j) => j.provinceId).filter((v): v is number => v != null))];
-    const allDistrictIds = [...new Set(jobContexts.map((j) => j.districtId).filter((v): v is number => v != null))];
-    const jobTypeSet = new Set(jobContexts.map((j) => j.jobType));
-    const expLevelSet = new Set(jobContexts.map((j) => j.experienceLevel));
+    const jobIds = jobContexts.map((j) => j.id);
 
     const EXPERIENCE_RANK: Record<string, number> = {
       INTERN: 0, FRESHER: 1, JUNIOR: 2, MIDDLE: 3, SENIOR: 4, LEAD: 5,
     };
 
-    // ── Fetch candidate pool ─────────────────────────────────────────────────
-    // Build OR filter to catch any relevant candidate
     const orFilters: Prisma.CandidateWhereInput[] = [];
     if (allCategoryIds.length) {
       orFilters.push({ candidateCategories: { some: { categoryId: { in: allCategoryIds } } } });
@@ -836,19 +849,19 @@ export const employerPortalService = {
     if (allSkillIds.length) {
       orFilters.push({ candidateSkills: { some: { skillId: { in: allSkillIds } } } });
     }
-    // Always include candidates who applied to company
-    orFilters.push({ applications: { some: { job: { companyId } } } });
+    if (!orFilters.length) return empty;
 
     const baseWhere: Prisma.CandidateWhereInput = {
       ...(opts.provinceId != null ? { provinceId: opts.provinceId } : {}),
       ...(opts.experienceLevel
         ? { preference: { experienceLevel: opts.experienceLevel as never } }
         : {}),
-      ...(orFilters.length ? { OR: orFilters } : {}),
+      OR: orFilters,
     };
 
     const candidates = await prisma.candidate.findMany({
       where: baseWhere,
+      orderBy: { id: "desc" },
       take: POOL,
       include: {
         user: { select: { id: true, username: true, email: true, avatar: true } },
@@ -856,21 +869,14 @@ export const employerPortalService = {
         district: { select: { name: true } },
         candidateSkills: { select: { skillId: true } },
         candidateCategories: { select: { categoryId: true } },
-        preference: { select: { experienceLevel: true, jobType: true, isOpenToRemote: true, preferredProvinceId: true } },
+        preference: { select: { experienceLevel: true, jobType: true, preferredProvinceId: true } },
+        _count: { select: { resumes: true } },
         applications: {
-          where: { job: { companyId } },
-          select: { job: { select: { title: true } } },
-          take: 1,
-          orderBy: { createdAt: "desc" },
+          where: { jobId: { in: jobIds } },
+          select: { jobId: true },
         },
       },
     });
-
-    // ── Score each candidate ─────────────────────────────────────────────────
-    const categoriesSet = new Set(allCategoryIds);
-    const skillsSet = new Set(allSkillIds);
-    const provincesSet = new Set(allProvinceIds);
-    const districtsSet = new Set(allDistrictIds);
 
     type ScoredRow = {
       candidateId: number;
@@ -878,90 +884,104 @@ export const employerPortalService = {
       province: { name: string } | null;
       district: { name: string } | null;
       score: number;
-      reason: "applied" | "category_match" | "skill_match" | "multi_match";
+      reason: "category_match" | "skill_match" | "multi_match";
       matchedSkillCount: number;
       matchedCategoryCount: number;
+      matchedJob: { id: number; title: string };
       hint: string;
     };
 
-    const scored: ScoredRow[] = candidates.map((c) => {
-      let score = 0;
-      const signals: string[] = [];
-
-      const appliedJob = c.applications[0]?.job?.title;
-      if (appliedJob) {
-        score += 30;
-        signals.push("applied");
-      }
-
+    const scored: ScoredRow[] = [];
+    for (const c of candidates) {
+      const appliedJobIds = new Set(c.applications.map((a) => a.jobId));
       const cCategories = new Set(c.candidateCategories.map((r) => r.categoryId));
-      const matchedCats = [...cCategories].filter((id) => categoriesSet.has(id)).length;
-      if (matchedCats > 0) {
-        score += Math.min(matchedCats * 10, 20);
-        signals.push("category");
-      }
-
       const cSkills = new Set(c.candidateSkills.map((r) => r.skillId));
-      const matchedSkills = [...cSkills].filter((id) => skillsSet.has(id)).length;
-      if (matchedSkills > 0) {
-        score += Math.min(matchedSkills * 5, 25);
-        signals.push("skill");
-      }
-
       const prefProvince = c.preference?.preferredProvinceId ?? null;
-      if (prefProvince != null && provincesSet.has(prefProvince)) {
-        score += 8;
-        signals.push("location");
-      } else if (c.provinceId != null && provincesSet.has(c.provinceId)) {
-        score += 5;
-        signals.push("location");
-      }
-      if (c.districtId != null && districtsSet.has(c.districtId)) score += 3;
-
       const prefExp = c.preference?.experienceLevel != null ? String(c.preference.experienceLevel) : null;
-      if (prefExp && expLevelSet.has(prefExp)) {
-        score += 8;
-        signals.push("experience");
-      } else if (prefExp) {
-        const prefRank = EXPERIENCE_RANK[prefExp] ?? -1;
-        let minDist = Infinity;
-        for (const jExp of expLevelSet) {
-          const jRank = EXPERIENCE_RANK[jExp] ?? -1;
-          if (prefRank >= 0 && jRank >= 0) minDist = Math.min(minDist, Math.abs(prefRank - jRank));
+      const prefJobType = c.preference?.jobType != null ? String(c.preference.jobType) : null;
+
+      let best: ScoredRow | null = null;
+
+      for (const job of jobContexts) {
+        if (appliedJobIds.has(job.id)) continue;
+
+        let score = 0;
+        const signals: string[] = [];
+        const matchedSkills = job.skillIds.filter((id) => cSkills.has(id)).length;
+        const matchedCats = cCategories.has(job.categoryId) ? 1 : 0;
+        if (matchedSkills === 0 && matchedCats === 0) continue;
+
+        if (matchedSkills > 0) {
+          score += Math.min(matchedSkills * 6, 30);
+          signals.push("skill");
         }
-        if (minDist === 1) score += 4;
-        else if (minDist >= 2) score -= 3;
+        if (matchedCats > 0) {
+          score += 16;
+          signals.push("category");
+        }
+
+        if (prefProvince != null && job.provinceId != null && prefProvince === job.provinceId) {
+          score += 10;
+          signals.push("location");
+        } else if (c.provinceId != null && job.provinceId != null && c.provinceId === job.provinceId) {
+          score += 6;
+          signals.push("location");
+        }
+        if (c.districtId != null && job.districtId != null && c.districtId === job.districtId) {
+          score += 4;
+          if (!signals.includes("location")) signals.push("location");
+        }
+
+        if (prefExp && prefExp === job.experienceLevel) {
+          score += 10;
+          signals.push("experience");
+        } else if (prefExp) {
+          const prefRank = EXPERIENCE_RANK[prefExp] ?? -1;
+          const jobRank = EXPERIENCE_RANK[job.experienceLevel] ?? -1;
+          if (prefRank >= 0 && jobRank >= 0) {
+            const dist = Math.abs(prefRank - jobRank);
+            if (dist === 1) score += 4;
+            else if (dist >= 2) score -= 4;
+          }
+        }
+
+        if (prefJobType && prefJobType === job.jobType) score += 6;
+        if (c._count.resumes > 0) score += 3;
+        if (score < MIN_SCORE) continue;
+
+        const reason: ScoredRow["reason"] =
+          signals.includes("skill") && signals.length >= 2
+            ? "multi_match"
+            : signals.includes("skill")
+              ? "skill_match"
+              : "category_match";
+
+        const hintParts: string[] = [`Phù hợp tin: ${job.title}`];
+        if (matchedSkills > 0) hintParts.push(`${matchedSkills} kỹ năng khớp`);
+        if (matchedCats > 0) hintParts.push("Đúng ngành");
+        if (signals.includes("experience")) hintParts.push("Kinh nghiệm phù hợp");
+        if (signals.includes("location")) hintParts.push("Khu vực phù hợp");
+
+        const row: ScoredRow = {
+          candidateId: c.id,
+          user: c.user,
+          province: c.province,
+          district: c.district,
+          score,
+          reason,
+          matchedSkillCount: matchedSkills,
+          matchedCategoryCount: matchedCats,
+          matchedJob: { id: job.id, title: job.title },
+          hint: hintParts.join(" · "),
+        };
+        if (!best || row.score > best.score || (row.score === best.score && row.matchedSkillCount > best.matchedSkillCount)) {
+          best = row;
+        }
       }
 
-      const prefJobType = c.preference?.jobType != null ? String(c.preference.jobType) : null;
-      if (prefJobType && jobTypeSet.has(prefJobType)) score += 5;
+      if (best) scored.push(best);
+    }
 
-      let reason: ScoredRow["reason"] = "category_match";
-      if (signals.includes("applied")) reason = "applied";
-      else if (signals.length >= 2) reason = "multi_match";
-      else if (signals.includes("skill")) reason = "skill_match";
-
-      const hintParts: string[] = [];
-      if (appliedJob) hintParts.push(`Đã ứng tuyển: ${appliedJob}`);
-      if (matchedSkills > 0) hintParts.push(`${matchedSkills} kỹ năng phù hợp`);
-      if (matchedCats > 0 && !appliedJob) hintParts.push("Ngành nghề phù hợp");
-      if (signals.includes("experience")) hintParts.push("Kinh nghiệm phù hợp");
-      if (signals.includes("location")) hintParts.push("Khu vực phù hợp");
-
-      return {
-        candidateId: c.id,
-        user: c.user,
-        province: c.province,
-        district: c.district,
-        score,
-        reason,
-        matchedSkillCount: matchedSkills,
-        matchedCategoryCount: matchedCats,
-        hint: hintParts.join(" · ") || "Có thể phù hợp",
-      };
-    });
-
-    // Sort by score desc
     scored.sort((a, b) => b.score - a.score || b.matchedSkillCount - a.matchedSkillCount);
 
     const total = scored.length;

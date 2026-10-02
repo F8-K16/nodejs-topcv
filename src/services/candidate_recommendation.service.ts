@@ -66,9 +66,9 @@ const WEIGHTS = {
   salaryMiss: -3,
   salaryOverlapBonus: 1,
   remote: 2,
-  skillPerMatch: 1,
-  skillCap: 8,
-  skillMiss: -3,
+  skillPerMatch: 4,
+  skillCap: 16,
+  skillMiss: -6,
   featured: 1,
   recencyMaxDays: 30,
   recencyBonus: 3,
@@ -215,6 +215,114 @@ function computeRecommendationScore(
 
   if (job.isFeatured) score += WEIGHTS.featured;
   return score;
+}
+
+function buildMatchReasons(
+  job: Prisma.JobGetPayload<{ include: typeof jobListInclude }>,
+  ctx: RecommendationContext,
+): string[] {
+  const reasons: string[] = [];
+  const remoteJob = isRemoteJob(job);
+  const company = job.company;
+
+  if (ctx.prefDistrictId != null && company.districtId === ctx.prefDistrictId) {
+    reasons.push("Đúng quận/huyện");
+  } else if (
+    ctx.prefProvinceId != null &&
+    company.provinceId === ctx.prefProvinceId
+  ) {
+    reasons.push("Đúng tỉnh/thành");
+  } else if (ctx.pref?.isOpenToRemote && remoteJob) {
+    reasons.push("Làm từ xa");
+  }
+
+  if (ctx.categorySet.size > 0 && ctx.categorySet.has(job.categoryId)) {
+    const name = job.category?.name?.trim();
+    if (name) reasons.push(name);
+  }
+
+  if (ctx.skillSet.size > 0) {
+    let matched = 0;
+    for (const js of job.jobSkills) {
+      if (ctx.skillSet.has(js.skillId)) matched += 1;
+    }
+    if (matched > 0) reasons.push(`${matched} kỹ năng khớp`);
+  }
+
+  if (
+    ctx.pref?.experienceLevel != null &&
+    String(job.experienceLevel) === String(ctx.pref.experienceLevel)
+  ) {
+    reasons.push("Đúng kinh nghiệm");
+  }
+
+  if (reasons.length === 0) reasons.push("Tin đang tuyển");
+  return reasons.slice(0, 3);
+}
+
+function extractCvSkillNames(content: Prisma.JsonValue): string[] {
+  if (!content || typeof content !== "object" || Array.isArray(content)) {
+    return [];
+  }
+  const skills = (content as { skills?: unknown }).skills;
+  if (!Array.isArray(skills)) return [];
+  const names: string[] = [];
+  for (const item of skills) {
+    if (typeof item === "string") {
+      const name = item.trim();
+      if (name) names.push(name);
+    } else if (item && typeof item === "object" && !Array.isArray(item)) {
+      const name = (item as { name?: unknown }).name;
+      if (typeof name === "string" && name.trim()) names.push(name.trim());
+    }
+    if (names.length >= 40) break;
+  }
+  return names;
+}
+
+async function skillIdsFromLatestCv(userId: number): Promise<number[]> {
+  const cv = await prisma.cv.findFirst({
+    where: { userId, deletedAt: null },
+    orderBy: { updatedAt: "desc" },
+    select: { content: true },
+  });
+  const names = extractCvSkillNames(cv?.content ?? null);
+  if (!names.length) return [];
+  const rows = await prisma.skill.findMany({
+    where: { name: { in: names } },
+    select: { id: true },
+  });
+  return rows.map((row) => row.id);
+}
+
+async function resolveRecommendationSkillIds(
+  userId: number,
+  preferenceSkillIds: number[],
+): Promise<number[]> {
+  if (preferenceSkillIds.length > 0) return preferenceSkillIds;
+  return skillIdsFromLatestCv(userId);
+}
+
+function applyAiRank(
+  rows: JobWithScore[],
+  rankedIds: number[],
+  headSize: number,
+): JobWithScore[] {
+  const head = rows.slice(0, headSize);
+  const tail = rows.slice(headSize);
+  const byId = new Map(head.map((job) => [job.id, job]));
+  const used = new Set<number>();
+  const reordered: JobWithScore[] = [];
+  for (const id of rankedIds) {
+    const job = byId.get(id);
+    if (!job || used.has(id)) continue;
+    used.add(id);
+    reordered.push(job);
+  }
+  for (const job of head) {
+    if (!used.has(job.id)) reordered.push(job);
+  }
+  return [...reordered, ...tail];
 }
 
 function diversifyByCompanyAndCategory(rows: JobWithScore[]): JobWithScore[] {
@@ -631,8 +739,9 @@ export const candidateRecommendationService = {
     };
 
     const pref = candidate.preference;
-    const prefSkillIds: number[] = candidate.candidateSkills.map((r) =>
-      Number(r.skillId),
+    const prefSkillIds = await resolveRecommendationSkillIds(
+      userId,
+      candidate.candidateSkills.map((r) => Number(r.skillId)),
     );
     const prefCategoryIds: number[] = candidate.candidateCategories.map((r) =>
       Number(r.categoryId),
@@ -642,6 +751,14 @@ export const candidateRecommendationService = {
 
     const skillSet = new Set<number>(prefSkillIds);
     const categorySet = new Set<number>(prefCategoryIds);
+    const scoreCtx: RecommendationContext = {
+      pref,
+      prefProvinceId,
+      prefDistrictId,
+      skillSet,
+      categorySet,
+      now,
+    };
 
     const whereTiers = buildRankedCandidateWheres(
       where,
@@ -653,20 +770,15 @@ export const candidateRecommendationService = {
 
     const scored: JobWithScore[] = rows.map((job) => ({
       ...job,
-      score: computeRecommendationScore(job, {
-        pref,
-        prefProvinceId,
-        prefDistrictId,
-        skillSet,
-        categorySet,
-        now,
-      }),
+      score: computeRecommendationScore(job, scoreCtx),
     }));
 
     scored.sort((a, b) => {
       if (b.score !== a.score) return b.score - a.score;
       return b.id - a.id;
     });
+
+    let diversified = diversifyByCompanyAndCategory(scored);
 
     if (page === 1 && prefCategoryIds.length + prefSkillIds.length > 0) {
       try {
@@ -685,7 +797,8 @@ export const candidateRecommendationService = {
             : Promise.resolve([] as Array<{ name: string }>),
         ]);
 
-        const rerankJobs = scored.slice(0, 24).map((j) => ({
+        const head = diversified.slice(0, 24);
+        const rerankJobs = head.map((j) => ({
           id: j.id,
           title: j.title,
           category: j.category?.name ?? "",
@@ -721,31 +834,21 @@ export const candidateRecommendationService = {
         );
 
         if (rankedIds.length) {
-          const rank = new Map<number, number>();
-          rankedIds.forEach((id, idx) => rank.set(id, idx));
-          scored.sort((a, b) => {
-            const ra = rank.get(a.id);
-            const rb = rank.get(b.id);
-            if (ra != null && rb != null) return ra - rb;
-            if (ra != null) return -1;
-            if (rb != null) return 1;
-            if (b.score !== a.score) return b.score - a.score;
-            return b.id - a.id;
-          });
+          diversified = applyAiRank(diversified, rankedIds, head.length);
         }
       } catch (e) {
         void e;
       }
     }
 
-    const diversified = diversifyByCompanyAndCategory(scored);
     const total = diversified.length;
     const totalPages = Math.ceil(total / limit) || 1;
     const skip = (page - 1) * limit;
     const jobs = diversified.slice(skip, skip + limit).map((row) => {
-      const copy = { ...row } as JobWithScore;
+      const copy = { ...row } as JobWithScore & { matchReasons?: string[] };
       delete (copy as { score?: number }).score;
-      return copy as Omit<JobWithScore, "score">;
+      copy.matchReasons = buildMatchReasons(row, scoreCtx);
+      return copy as Omit<JobWithScore, "score"> & { matchReasons: string[] };
     });
 
     const payload: JobListPayload = {
@@ -819,8 +922,9 @@ export const candidateRecommendationService = {
     };
 
     const pref = candidate.preference;
-    const prefSkillIds: number[] = candidate.candidateSkills.map((r) =>
-      Number(r.skillId),
+    const prefSkillIds = await resolveRecommendationSkillIds(
+      userId,
+      candidate.candidateSkills.map((r) => Number(r.skillId)),
     );
     const prefCategoryIds: number[] = candidate.candidateCategories.map((r) =>
       Number(r.categoryId),
