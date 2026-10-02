@@ -64,7 +64,16 @@ jobs:
           port="${VPS_SSH_PORT:-22}"
           echo "Connecting to ${VPS_USER}@${VPS_HOST}:${port}"
 
-          ssh \
+          # Kéo đúng commit trước, rồi mới gọi deploy.sh.
+          # Lần đầu file scripts/deploy.sh chưa có trên VPS.
+          printf '%s\n' \
+            'set -euo pipefail' \
+            "cd $(escape "$VPS_APP_DIR")" \
+            'git fetch origin main' \
+            "git checkout --force --detach $(escape "$DEPLOY_SHA")" \
+            'if [ ! -f scripts/deploy.sh ]; then echo "scripts/deploy.sh is missing. VPS_APP_DIR must be the git repository root." >&2; exit 1; fi' \
+            "DEPLOY_SHA=$(escape "$DEPLOY_SHA") bash scripts/deploy.sh" \
+          | ssh \
             -i ~/.ssh/deploy_key \
             -p "$port" \
             -o IdentitiesOnly=yes \
@@ -72,4 +81,4 @@ jobs:
             -o ConnectTimeout=20 \
             -o StrictHostKeyChecking=accept-new \
             "${VPS_USER}@${VPS_HOST}" \
-            "DEPLOY_SHA=$(escape "$DEPLOY_SHA") /bin/bash $(escape "$VPS_APP_DIR/scripts/deploy.sh")"
+            "bash -s"

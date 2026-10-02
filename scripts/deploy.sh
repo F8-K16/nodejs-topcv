@@ -29,7 +29,7 @@ fi
 git fetch origin main
 
 if [[ -n "${DEPLOY_SHA:-}" ]]; then
-  git checkout --detach "$DEPLOY_SHA"
+  git checkout --force --detach "$DEPLOY_SHA"
 else
   git checkout main
   git reset --hard origin/main
