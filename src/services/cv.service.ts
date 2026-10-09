@@ -372,7 +372,7 @@ export const cvService = {
         updatedAt: true,
         lastEditedAt: true,
         template: {
-          select: { id: true, name: true, thumbnailUrl: true },
+          select: { id: true, name: true, slug: true, thumbnailUrl: true },
         },
       },
     });
