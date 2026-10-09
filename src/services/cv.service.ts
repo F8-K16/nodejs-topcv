@@ -7,6 +7,7 @@ import type {
 } from "../schemas/cv.schema";
 import { HttpException } from "../utils/exception";
 import { prisma } from "../utils/prisma";
+import { slugify } from "../utils/slug";
 import {
   CacheKeys,
   cacheGetJson,
@@ -154,6 +155,26 @@ export const buildDefaultContentFromTemplate = (
   return content;
 };
 
+async function allocateCvTemplateSlug(name: string, excludeId?: number) {
+  const base = slugify(name).replace(/^cong-ty$/, "mau-cv") || "mau-cv";
+  let candidate = base;
+  let n = 2;
+  while (n < 500) {
+    const found = await prisma.cvTemplate.findFirst({
+      where: {
+        slug: candidate,
+        ...(excludeId ? { NOT: { id: excludeId } } : {}),
+      },
+      select: { id: true },
+    });
+    if (!found) return candidate;
+    const suffix = `-${n}`;
+    candidate = `${base.slice(0, 180 - suffix.length)}${suffix}`;
+    n += 1;
+  }
+  throw new HttpException("Không tạo được đường dẫn mẫu CV", 500);
+}
+
 export const cvService = {
   async listTemplatesForAdmin() {
     const cacheKey = CacheKeys.cvTemplatesAdminList;
@@ -183,6 +204,7 @@ export const cvService = {
       select: {
         id: true,
         name: true,
+        slug: true,
         description: true,
         thumbnailUrl: true,
         createdAt: true,
@@ -213,10 +235,31 @@ export const cvService = {
     return template;
   },
 
+  async getPublicTemplateByKey(key: string) {
+    const trimmed = key.trim();
+    if (!trimmed) {
+      throw new HttpException("Mẫu CV không hợp lệ", 400);
+    }
+    if (/^\d+$/.test(trimmed)) {
+      return this.getTemplate(Number(trimmed));
+    }
+    const row = await prisma.cvTemplate.findFirst({
+      where: { slug: trimmed, status: true, deletedAt: null },
+      select: { id: true },
+    });
+    if (!row) {
+      throw new HttpException("Không tìm thấy mẫu CV", 404);
+    }
+    return this.getTemplate(row.id);
+  },
+
   async createTemplate(input: CreateCvTemplateInput) {
+    const name = input.name.trim();
+    const slug = await allocateCvTemplateSlug(input.slug?.trim() || name);
     const created = await prisma.cvTemplate.create({
       data: {
-        name: input.name.trim(),
+        name,
+        slug,
         description: input.description?.trim() || null,
         thumbnailUrl: input.thumbnailUrl?.trim() || null,
         templateData: input.templateData as unknown as Prisma.InputJsonValue,
@@ -233,15 +276,23 @@ export const cvService = {
     }
     const existing = await prisma.cvTemplate.findFirst({
       where: { id, deletedAt: null },
-      select: { id: true },
+      select: { id: true, name: true },
     });
     if (!existing) {
       throw new HttpException("Không tìm thấy mẫu CV", 404);
     }
+    const nextName = input.name !== undefined ? input.name.trim() : existing.name;
+    const slug =
+      input.slug?.trim()
+        ? await allocateCvTemplateSlug(input.slug.trim(), id)
+        : input.name !== undefined
+          ? await allocateCvTemplateSlug(nextName, id)
+          : undefined;
     const updated = await prisma.cvTemplate.update({
       where: { id },
       data: {
-        ...(input.name !== undefined ? { name: input.name.trim() } : {}),
+        ...(input.name !== undefined ? { name: nextName } : {}),
+        ...(slug ? { slug } : {}),
         ...(input.description !== undefined
           ? { description: input.description?.trim() || null }
           : {}),

@@ -5,6 +5,7 @@
  * Chạy: pnpm exec ts-node src/scripts/reset-demo-data.ts
  */
 import { prisma } from "../utils/prisma";
+import { uniqueSlug } from "../utils/slug";
 
 const ADMIN_EMAIL = "haovaf8@fullstack.edu.vn";
 
@@ -144,9 +145,11 @@ const main = async () => {
   await prisma.province.createMany({ data: PROVINCES });
 
   await prisma.cvTemplate.deleteMany();
+  const usedSlugs = new Set<string>();
   await prisma.cvTemplate.createMany({
     data: CV_TEMPLATE_PRESETS.map((preset) => ({
       name: preset.name,
+      slug: uniqueSlug(preset.name, usedSlugs),
       description: preset.description,
       templateData: {
         layout: preset.layout,

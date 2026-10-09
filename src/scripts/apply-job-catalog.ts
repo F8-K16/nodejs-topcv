@@ -6,6 +6,7 @@ import {
 } from "../prisma/seed/job-catalog";
 import { Prisma } from "../generated/prisma/client";
 import { prisma } from "../utils/prisma";
+import { uniqueSlug } from "../utils/slug";
 
 const EXTRA_CV_TEMPLATES = [
   { name: "Chuyên nghiệp", description: "Một cột, tông xám trang trọng.", layout: "single-column", theme: "slate", variant: "classic" },
@@ -81,12 +82,24 @@ const main = async () => {
     } as Prisma.InputJsonValue;
     const existing = await prisma.cvTemplate.findFirst({
       where: { name: preset.name },
-      select: { id: true },
+      select: { id: true, slug: true },
     });
+    const usedSlugs = new Set(
+      (
+        await prisma.cvTemplate.findMany({
+          select: { slug: true, id: true },
+        })
+      )
+        .filter((row) => row.id !== existing?.id)
+        .map((row) => row.slug)
+        .filter(Boolean),
+    );
+    const slug = existing?.slug || uniqueSlug(preset.name, usedSlugs);
     if (existing) {
       await prisma.cvTemplate.update({
         where: { id: existing.id },
         data: {
+          slug,
           description: preset.description,
           templateData,
           status: true,
@@ -97,6 +110,7 @@ const main = async () => {
       await prisma.cvTemplate.create({
         data: {
           name: preset.name,
+          slug,
           description: preset.description,
           templateData,
           status: true,

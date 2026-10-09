@@ -35,6 +35,14 @@ describe("prisma schema invariants", () => {
     expect(readModel("notification.prisma")).toContain("onDelete: Cascade");
   });
 
+  it("uses unique slug on public catalog models", () => {
+    expect(readModel("job.prisma")).toContain("slug");
+    expect(readModel("company.prisma")).toContain("@unique");
+    expect(readModel("cv_template.prisma")).toContain(
+      'slug         String   @unique @db.VarChar(180)',
+    );
+  });
+
   it("stores admin TOTP fields on users", () => {
     const user = readModel("user.prisma");
     expect(user).toContain("totpSecret");

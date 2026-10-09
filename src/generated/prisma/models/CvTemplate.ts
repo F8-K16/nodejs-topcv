@@ -37,6 +37,7 @@ export type CvTemplateSumAggregateOutputType = {
 export type CvTemplateMinAggregateOutputType = {
   id: number | null
   name: string | null
+  slug: string | null
   description: string | null
   thumbnailUrl: string | null
   status: boolean | null
@@ -48,6 +49,7 @@ export type CvTemplateMinAggregateOutputType = {
 export type CvTemplateMaxAggregateOutputType = {
   id: number | null
   name: string | null
+  slug: string | null
   description: string | null
   thumbnailUrl: string | null
   status: boolean | null
@@ -59,6 +61,7 @@ export type CvTemplateMaxAggregateOutputType = {
 export type CvTemplateCountAggregateOutputType = {
   id: number
   name: number
+  slug: number
   description: number
   thumbnailUrl: number
   templateData: number
@@ -81,6 +84,7 @@ export type CvTemplateSumAggregateInputType = {
 export type CvTemplateMinAggregateInputType = {
   id?: true
   name?: true
+  slug?: true
   description?: true
   thumbnailUrl?: true
   status?: true
@@ -92,6 +96,7 @@ export type CvTemplateMinAggregateInputType = {
 export type CvTemplateMaxAggregateInputType = {
   id?: true
   name?: true
+  slug?: true
   description?: true
   thumbnailUrl?: true
   status?: true
@@ -103,6 +108,7 @@ export type CvTemplateMaxAggregateInputType = {
 export type CvTemplateCountAggregateInputType = {
   id?: true
   name?: true
+  slug?: true
   description?: true
   thumbnailUrl?: true
   templateData?: true
@@ -202,6 +208,7 @@ export type CvTemplateGroupByArgs<ExtArgs extends runtime.Types.Extensions.Inter
 export type CvTemplateGroupByOutputType = {
   id: number
   name: string
+  slug: string
   description: string | null
   thumbnailUrl: string | null
   templateData: runtime.JsonValue
@@ -237,6 +244,7 @@ export type CvTemplateWhereInput = {
   NOT?: Prisma.CvTemplateWhereInput | Prisma.CvTemplateWhereInput[]
   id?: Prisma.IntFilter<"CvTemplate"> | number
   name?: Prisma.StringFilter<"CvTemplate"> | string
+  slug?: Prisma.StringFilter<"CvTemplate"> | string
   description?: Prisma.StringNullableFilter<"CvTemplate"> | string | null
   thumbnailUrl?: Prisma.StringNullableFilter<"CvTemplate"> | string | null
   templateData?: Prisma.JsonFilter<"CvTemplate">
@@ -250,6 +258,7 @@ export type CvTemplateWhereInput = {
 export type CvTemplateOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  slug?: Prisma.SortOrder
   description?: Prisma.SortOrderInput | Prisma.SortOrder
   thumbnailUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   templateData?: Prisma.SortOrder
@@ -263,6 +272,7 @@ export type CvTemplateOrderByWithRelationInput = {
 
 export type CvTemplateWhereUniqueInput = Prisma.AtLeast<{
   id?: number
+  slug?: string
   AND?: Prisma.CvTemplateWhereInput | Prisma.CvTemplateWhereInput[]
   OR?: Prisma.CvTemplateWhereInput[]
   NOT?: Prisma.CvTemplateWhereInput | Prisma.CvTemplateWhereInput[]
@@ -275,11 +285,12 @@ export type CvTemplateWhereUniqueInput = Prisma.AtLeast<{
   updatedAt?: Prisma.DateTimeFilter<"CvTemplate"> | Date | string
   deletedAt?: Prisma.DateTimeNullableFilter<"CvTemplate"> | Date | string | null
   cvs?: Prisma.CvListRelationFilter
-}, "id">
+}, "id" | "slug">
 
 export type CvTemplateOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  slug?: Prisma.SortOrder
   description?: Prisma.SortOrderInput | Prisma.SortOrder
   thumbnailUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   templateData?: Prisma.SortOrder
@@ -300,6 +311,7 @@ export type CvTemplateScalarWhereWithAggregatesInput = {
   NOT?: Prisma.CvTemplateScalarWhereWithAggregatesInput | Prisma.CvTemplateScalarWhereWithAggregatesInput[]
   id?: Prisma.IntWithAggregatesFilter<"CvTemplate"> | number
   name?: Prisma.StringWithAggregatesFilter<"CvTemplate"> | string
+  slug?: Prisma.StringWithAggregatesFilter<"CvTemplate"> | string
   description?: Prisma.StringNullableWithAggregatesFilter<"CvTemplate"> | string | null
   thumbnailUrl?: Prisma.StringNullableWithAggregatesFilter<"CvTemplate"> | string | null
   templateData?: Prisma.JsonWithAggregatesFilter<"CvTemplate">
@@ -311,6 +323,7 @@ export type CvTemplateScalarWhereWithAggregatesInput = {
 
 export type CvTemplateCreateInput = {
   name: string
+  slug: string
   description?: string | null
   thumbnailUrl?: string | null
   templateData: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -324,6 +337,7 @@ export type CvTemplateCreateInput = {
 export type CvTemplateUncheckedCreateInput = {
   id?: number
   name: string
+  slug: string
   description?: string | null
   thumbnailUrl?: string | null
   templateData: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -336,6 +350,7 @@ export type CvTemplateUncheckedCreateInput = {
 
 export type CvTemplateUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   thumbnailUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   templateData?: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -349,6 +364,7 @@ export type CvTemplateUpdateInput = {
 export type CvTemplateUncheckedUpdateInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   thumbnailUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   templateData?: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -362,6 +378,7 @@ export type CvTemplateUncheckedUpdateInput = {
 export type CvTemplateCreateManyInput = {
   id?: number
   name: string
+  slug: string
   description?: string | null
   thumbnailUrl?: string | null
   templateData: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -373,6 +390,7 @@ export type CvTemplateCreateManyInput = {
 
 export type CvTemplateUpdateManyMutationInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   thumbnailUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   templateData?: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -385,6 +403,7 @@ export type CvTemplateUpdateManyMutationInput = {
 export type CvTemplateUncheckedUpdateManyInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   thumbnailUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   templateData?: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -408,6 +427,7 @@ export type CvTemplateOrderByRelevanceInput = {
 export type CvTemplateCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  slug?: Prisma.SortOrder
   description?: Prisma.SortOrder
   thumbnailUrl?: Prisma.SortOrder
   templateData?: Prisma.SortOrder
@@ -424,6 +444,7 @@ export type CvTemplateAvgOrderByAggregateInput = {
 export type CvTemplateMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  slug?: Prisma.SortOrder
   description?: Prisma.SortOrder
   thumbnailUrl?: Prisma.SortOrder
   status?: Prisma.SortOrder
@@ -435,6 +456,7 @@ export type CvTemplateMaxOrderByAggregateInput = {
 export type CvTemplateMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  slug?: Prisma.SortOrder
   description?: Prisma.SortOrder
   thumbnailUrl?: Prisma.SortOrder
   status?: Prisma.SortOrder
@@ -463,6 +485,7 @@ export type CvTemplateUpdateOneRequiredWithoutCvsNestedInput = {
 
 export type CvTemplateCreateWithoutCvsInput = {
   name: string
+  slug: string
   description?: string | null
   thumbnailUrl?: string | null
   templateData: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -475,6 +498,7 @@ export type CvTemplateCreateWithoutCvsInput = {
 export type CvTemplateUncheckedCreateWithoutCvsInput = {
   id?: number
   name: string
+  slug: string
   description?: string | null
   thumbnailUrl?: string | null
   templateData: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -502,6 +526,7 @@ export type CvTemplateUpdateToOneWithWhereWithoutCvsInput = {
 
 export type CvTemplateUpdateWithoutCvsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   thumbnailUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   templateData?: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -514,6 +539,7 @@ export type CvTemplateUpdateWithoutCvsInput = {
 export type CvTemplateUncheckedUpdateWithoutCvsInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   thumbnailUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   templateData?: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -557,6 +583,7 @@ export type CvTemplateCountOutputTypeCountCvsArgs<ExtArgs extends runtime.Types.
 export type CvTemplateSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   name?: boolean
+  slug?: boolean
   description?: boolean
   thumbnailUrl?: boolean
   templateData?: boolean
@@ -573,6 +600,7 @@ export type CvTemplateSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
 export type CvTemplateSelectScalar = {
   id?: boolean
   name?: boolean
+  slug?: boolean
   description?: boolean
   thumbnailUrl?: boolean
   templateData?: boolean
@@ -582,7 +610,7 @@ export type CvTemplateSelectScalar = {
   deletedAt?: boolean
 }
 
-export type CvTemplateOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "description" | "thumbnailUrl" | "templateData" | "status" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["cvTemplate"]>
+export type CvTemplateOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "slug" | "description" | "thumbnailUrl" | "templateData" | "status" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["cvTemplate"]>
 export type CvTemplateInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   cvs?: boolean | Prisma.CvTemplate$cvsArgs<ExtArgs>
   _count?: boolean | Prisma.CvTemplateCountOutputTypeDefaultArgs<ExtArgs>
@@ -596,6 +624,7 @@ export type $CvTemplatePayload<ExtArgs extends runtime.Types.Extensions.Internal
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
     name: string
+    slug: string
     description: string | null
     thumbnailUrl: string | null
     templateData: runtime.JsonValue
@@ -975,6 +1004,7 @@ export interface Prisma__CvTemplateClient<T, Null = never, ExtArgs extends runti
 export interface CvTemplateFieldRefs {
   readonly id: Prisma.FieldRef<"CvTemplate", 'Int'>
   readonly name: Prisma.FieldRef<"CvTemplate", 'String'>
+  readonly slug: Prisma.FieldRef<"CvTemplate", 'String'>
   readonly description: Prisma.FieldRef<"CvTemplate", 'String'>
   readonly thumbnailUrl: Prisma.FieldRef<"CvTemplate", 'String'>
   readonly templateData: Prisma.FieldRef<"CvTemplate", 'Json'>

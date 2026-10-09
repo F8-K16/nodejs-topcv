@@ -31,10 +31,10 @@ export const CacheKeys = {
   jobPublicDetailLegacy: (id: number) => `${PREFIX}v2:jobs:public:detail:${id}`,
   jobsRecommended: (userId: number, queryHash: string) =>
     `${PREFIX}v1:jobs:recommended:${userId}:${queryHash}`,
-  cvTemplatesPublicList: `${PREFIX}v1:cv:templates:public:list`,
+  cvTemplatesPublicList: `${PREFIX}v2:cv:templates:public:list`,
   cvTemplatesAdminList: `${PREFIX}v1:cv:templates:admin:list`,
   cvTemplatePublicDetail: (id: number) =>
-    `${PREFIX}v1:cv:templates:public:${id}`,
+    `${PREFIX}v2:cv:templates:public:${id}`,
   aiCvSuggest: (userId: number, hash: string) =>
     `${PREFIX}v1:ai:cv:suggest:${userId}:${hash}`,
   aiCoverLetter: (userId: number, hash: string) =>
@@ -594,7 +594,7 @@ export async function invalidateCvTemplateCaches(
       cacheDel(CacheKeys.cvTemplatePublicDetail(Math.trunc(templateId))),
     );
   } else {
-    tasks.push(cacheDelPattern(`${PREFIX}v1:cv:templates:public:*`));
+    tasks.push(cacheDelPattern(`${PREFIX}v2:cv:templates:public:*`));
   }
   await Promise.all(tasks);
 }

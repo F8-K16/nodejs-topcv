@@ -25,6 +25,7 @@ export const cvTemplateDataSchema = z
 
 export const createCvTemplateSchema = z.object({
   name: z.string().trim().min(1).max(120),
+  slug: z.string().trim().min(1).max(180).optional(),
   description: z.string().trim().max(255).optional().nullable(),
   thumbnailUrl: z.string().trim().url().max(512).optional().nullable(),
   templateData: cvTemplateDataSchema,
@@ -33,6 +34,7 @@ export const createCvTemplateSchema = z.object({
 
 export const updateCvTemplateSchema = z.object({
   name: z.string().trim().min(1).max(120).optional(),
+  slug: z.string().trim().min(1).max(180).optional(),
   description: z.string().trim().max(255).optional().nullable(),
   thumbnailUrl: z.string().trim().url().max(512).optional().nullable(),
   templateData: cvTemplateDataSchema.optional(),

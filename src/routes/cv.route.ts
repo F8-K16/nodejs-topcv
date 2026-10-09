@@ -8,7 +8,7 @@ import { cvCreateSchema, cvUpdateSchema } from "../schemas/cv.schema";
 const router = express.Router();
 
 router.get("/cv/templates", cvController.listTemplates);
-router.get("/cv/templates/:id", cvController.getTemplate);
+router.get("/cv/templates/:slug", cvController.getTemplate);
 router.get("/cv/public/:id", cvController.getPublicCv);
 
 router.get("/cvs/my", authMiddleware, requireRole("CANDIDATE"), cvController.listMine);

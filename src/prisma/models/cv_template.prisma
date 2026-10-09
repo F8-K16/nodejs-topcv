@@ -1,6 +1,7 @@
 model CvTemplate {
   id           Int      @id @default(autoincrement())
   name         String   @db.VarChar(120)
+  slug         String   @unique @db.VarChar(180)
   description  String?  @db.VarChar(255)
   thumbnailUrl String?  @db.VarChar(512)
   templateData Json

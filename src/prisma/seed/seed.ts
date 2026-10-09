@@ -185,12 +185,24 @@ const upsertCvTemplate = async () => {
     };
     const existing = await prisma.cvTemplate.findFirst({
       where: { name: preset.name },
-      select: { id: true },
+      select: { id: true, slug: true },
     });
+    const usedSlugs = new Set(
+      (
+        await prisma.cvTemplate.findMany({
+          select: { slug: true, id: true },
+        })
+      )
+        .filter((row) => row.id !== existing?.id)
+        .map((row) => row.slug)
+        .filter(Boolean),
+    );
+    const slug = existing?.slug || uniqueSlug(preset.name, usedSlugs);
     const row = existing
       ? await prisma.cvTemplate.update({
           where: { id: existing.id },
           data: {
+            slug,
             description: preset.description,
             thumbnailUrl: null,
             templateData,
@@ -202,6 +214,7 @@ const upsertCvTemplate = async () => {
       : await prisma.cvTemplate.create({
           data: {
             name: preset.name,
+            slug,
             description: preset.description,
             templateData,
             status: true,

@@ -34,7 +34,7 @@ export const cvController = {
   },
 
   getTemplate: async (req: Request, res: Response) => {
-    const data = await cvService.getTemplate(Number(req.params.id));
+    const data = await cvService.getPublicTemplateByKey(String(req.params.slug ?? ""));
     res.json(data);
   },
 

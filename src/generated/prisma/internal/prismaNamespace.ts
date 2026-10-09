@@ -3227,6 +3227,7 @@ export type CvScalarFieldEnum = (typeof CvScalarFieldEnum)[keyof typeof CvScalar
 export const CvTemplateScalarFieldEnum = {
   id: 'id',
   name: 'name',
+  slug: 'slug',
   description: 'description',
   thumbnailUrl: 'thumbnailUrl',
   templateData: 'templateData',
@@ -3631,6 +3632,7 @@ export type CvOrderByRelevanceFieldEnum = (typeof CvOrderByRelevanceFieldEnum)[k
 
 export const CvTemplateOrderByRelevanceFieldEnum = {
   name: 'name',
+  slug: 'slug',
   description: 'description',
   thumbnailUrl: 'thumbnailUrl'
 } as const
