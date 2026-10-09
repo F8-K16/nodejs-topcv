@@ -59,6 +59,14 @@ pnpm install --frozen-lockfile
 pnpm exec prisma generate
 pnpm exec tsc
 
+# Tên cũ jobportal-* còn từ ecosystem trước rename; startOrReload không xóa app
+# khác tên nên API/worker chạy trùng với topcv-*.
+for name in jobportal-api jobportal-worker jobportal-web; do
+  if pm2 describe "$name" >/dev/null 2>&1; then
+    pm2 delete "$name"
+  fi
+done
+
 pm2 startOrReload ecosystem.config.cjs --update-env
 pm2 save
 

@@ -1,7 +1,7 @@
 module.exports = {
   apps: [
     {
-      name: "jobportal-api",
+      name: "topcv-api",
       script: "dist/app.js",
       cwd: __dirname,
       exec_mode: "fork",
@@ -11,7 +11,7 @@ module.exports = {
       },
     },
     {
-      name: "jobportal-worker",
+      name: "topcv-worker",
       script: "dist/workers/index.worker.js",
       cwd: __dirname,
       exec_mode: "fork",
