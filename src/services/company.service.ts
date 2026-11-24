@@ -246,7 +246,7 @@ export const companyService = {
     if (qNorm.all) {
       const companies = await prisma.company.findMany({
         where,
-        orderBy: { id: "desc" },
+        orderBy: [{ logo: "desc" }, { id: "desc" }],
         include,
       });
 
@@ -282,7 +282,7 @@ export const companyService = {
           where,
           skip,
           take: limit,
-          orderBy: { id: "desc" },
+          orderBy: [{ logo: "desc" }, { id: "desc" }],
           include,
         }),
 

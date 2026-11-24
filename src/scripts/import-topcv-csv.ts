@@ -5,6 +5,7 @@
  *
  * Chạy: pnpm run import:topcv-csv
  */
+import "dotenv/config";
 import { execFileSync } from "node:child_process";
 import path from "node:path";
 import {
@@ -49,11 +50,53 @@ type JobRow = {
   deadline: string;
   location: string;
   experience: string;
+  workForm: string;
+  quantity: string;
   addresses: string[];
   skills: string[];
   income: string;
   description: string;
 };
+
+const BASE_SKILLS = [
+  "TypeScript",
+  "JavaScript",
+  "Node.js",
+  "Express",
+  "React",
+  "Vue.js",
+  "Angular",
+  "MySQL",
+  "PostgreSQL",
+  "MongoDB",
+  "Redis",
+  "Docker",
+  "Java",
+  "Spring Boot",
+  "Python",
+  "PHP",
+  "Laravel",
+  "Go",
+  "C#",
+  ".NET",
+  "SQL",
+  "AWS",
+  "Flutter",
+  "Kotlin",
+  "Swift",
+  "Figma",
+  "SEO",
+  "Google Ads",
+  "Content Marketing",
+  "B2B Sales",
+  "Product Management",
+  "Data Analysis",
+  "Power BI",
+  "Excel",
+  "Kế toán",
+  "Nhân sự",
+  "Tiếng Anh",
+];
 
 type CompanyRecord = {
   id: number;
@@ -69,7 +112,7 @@ const cut = (value: string, limit: number) => value.trim().slice(0, limit);
 const readCsv = (): { companies: CompanyRow[]; jobs: JobRow[] } => {
   const raw = execFileSync("python3", ["-c", PYTHON_READER, SCRAPER_DIR], {
     encoding: "utf8",
-    maxBuffer: 64 * 1024 * 1024,
+    maxBuffer: 256 * 1024 * 1024,
   });
   return JSON.parse(raw) as { companies: CompanyRow[]; jobs: JobRow[] };
 };
@@ -77,15 +120,27 @@ const readCsv = (): { companies: CompanyRow[]; jobs: JobRow[] } => {
 const topcvId = (link: string) => link.match(/\/(\d+)\.html/i)?.[1] ?? link;
 
 const uniqueName = (base: string, id: string, used: Set<string>) => {
-  const plain = cut(base, NAME_LIMIT);
-  if (!used.has(plain.toLowerCase())) {
-    used.add(plain.toLowerCase());
+  const plain = cut(base.normalize("NFC"), NAME_LIMIT);
+  const plainKey = fold(plain);
+  if (plainKey && !used.has(plainKey)) {
+    used.add(plainKey);
     return plain;
   }
-  const suffix = ` (${id})`;
-  const next = `${cut(base, NAME_LIMIT - suffix.length)}${suffix}`;
-  used.add(next.toLowerCase());
-  return next;
+  let n = 2;
+  while (n < 1000) {
+    const suffix = n === 2 ? ` (${id})` : ` (${id}-${n})`;
+    const next = cut(
+      `${cut(base.normalize("NFC"), NAME_LIMIT - suffix.length)}${suffix}`,
+      NAME_LIMIT,
+    );
+    const key = fold(next);
+    if (key && !used.has(key)) {
+      used.add(key);
+      return next;
+    }
+    n += 1;
+  }
+  throw new Error(`Không tạo được tên duy nhất cho ${base}`);
 };
 
 const companyDescription = (row: CompanyRow, stub: boolean) => {
@@ -107,12 +162,13 @@ const storedWebsite = (row: CompanyRow) => {
 };
 
 const linkFromCompany = (row: CompanyRecord) => {
+  const match = row.description?.match(
+    /https:\/\/www\.topcv\.vn\/cong-ty\/[^\s)]+/i,
+  );
+  if (match?.[0]) return match[0].replace(/[).,]+$/, "");
   const website = row.website ?? "";
   if (website.includes("/cong-ty/")) return website.split("?")[0] ?? website;
-  const match = row.description?.match(
-    /https:\/\/www\.topcv\.vn\/cong-ty\/[^\s]+/i,
-  );
-  return match?.[0]?.replace(/[).,]+$/, "") ?? "";
+  return "";
 };
 
 const fold = (value: string) =>
@@ -158,11 +214,17 @@ const experienceLevel = (raw: string, title: string) => {
   return ExperienceLevel.FRESHER;
 };
 
-const jobType = (title: string, description: string) => {
-  const text = `${title}\n${description}`;
+const jobType = (title: string, description: string, workForm = "") => {
+  const text = `${workForm}\n${title}\n${description}`;
   if (/freelance|cộng tác viên/i.test(text)) return JobType.FREELANCE;
   if (/bán thời gian|part[- ]?time/i.test(text)) return JobType.PART_TIME;
   return JobType.FULL_TIME;
+};
+
+const jobQuantity = (value: string) => {
+  const count = Number(value.match(/\d+/)?.[0] ?? 1);
+  if (!Number.isFinite(count) || count < 1) return 1;
+  return Math.min(count, 999);
 };
 
 const parseDeadline = (value: string) => {
@@ -298,7 +360,7 @@ const indexCompanies = (rows: CompanyRecord[]) => {
   const usedNames = new Set<string>();
   const usedSlugs = new Set<string>();
   for (const row of rows) {
-    usedNames.add(row.name.toLowerCase());
+    usedNames.add(fold(row.name));
     if (row.slug) usedSlugs.add(row.slug);
     const link = linkFromCompany(row);
     if (link) byLink.set(link, row);
@@ -445,9 +507,10 @@ const main = async () => {
   let createdCompanies = 0;
   let updatedCompanies = 0;
   let stubCompanies = 0;
+  const state = await loadCompanies();
 
   const applyCompany = async (row: CompanyRow, stub: boolean, jobLocation: string) => {
-    const state = await loadCompanies();
+    if (!row.companyLink) return;
     const current = state.byLink.get(row.companyLink);
     const place = matchLocation(`${row.address} ${jobLocation}`, locations);
     const data = {
@@ -473,13 +536,25 @@ const main = async () => {
       topcvId(row.companyLink),
       state.usedNames,
     );
-    await prisma.company.create({
+    const slug = uniqueSlug(name, state.usedSlugs);
+    const created = await prisma.company.create({
       data: {
         ...data,
         name,
-        slug: uniqueSlug(name, state.usedSlugs),
+        slug,
       },
+      select: { id: true },
     });
+    const record: CompanyRecord = {
+      id: created.id,
+      name,
+      slug,
+      website: data.website,
+      description: data.description,
+      provinceId: data.provinceId,
+    };
+    state.byLink.set(row.companyLink, record);
+    if (data.website) state.byLink.set(data.website, record);
     if (stub) stubCompanies += 1;
     else createdCompanies += 1;
   };
@@ -492,8 +567,11 @@ const main = async () => {
   }
 
   console.log(`Nhập ${companies.length} công ty từ companies_data.csv`);
-  for (const row of companies) {
+  for (const [index, row] of companies.entries()) {
     await applyCompany(row, false, jobLocationByLink.get(row.companyLink) ?? "");
+    if ((index + 1) % 500 === 0) {
+      console.log(`Đã xử lý ${index + 1}/${companies.length} công ty`);
+    }
   }
 
   const covered = new Set(companies.map((row) => row.companyLink));
@@ -520,7 +598,6 @@ const main = async () => {
     );
   }
 
-  const state = await loadCompanies();
   const existingJobs = await prisma.job.findMany({
     where: { description: { contains: "topcv.vn/viec-lam/" } },
     select: { id: true, description: true },
@@ -562,8 +639,8 @@ const main = async () => {
       description,
       minSalary: salary.minSalary,
       maxSalary: salary.maxSalary,
-      quantity: 1,
-      jobType: jobType(job.title, job.description),
+      quantity: jobQuantity(job.quantity),
+      jobType: jobType(job.title, job.description, job.workForm),
       experienceLevel: experienceLevel(job.experience, job.title),
       moderationStatus: JobModerationStatus.APPROVED,
       deadline: parseDeadline(job.deadline),
@@ -593,8 +670,11 @@ const main = async () => {
       createdJobs += 1;
     }
     await syncJobSkills(jobId, job.skills);
+    const done = createdJobs + updatedJobs + skippedJobs;
+    if (done % 500 === 0) console.log(`Đã xử lý ${done}/${jobs.length} việc làm`);
   }
 
+  for (const name of BASE_SKILLS) await ensureSkill(name);
   await syncCompanyCategories();
 
   console.log(
@@ -607,14 +687,50 @@ import ast, csv, json, sys
 from pathlib import Path
 base = Path(sys.argv[1])
 
+def literal(value, fallback):
+    text = (value or "").strip()
+    if not text:
+        return fallback
+    try:
+        return ast.literal_eval(text)
+    except Exception:
+        return fallback
+
+def as_text(value):
+    parsed = literal(value, None)
+    if isinstance(parsed, list):
+        return "\n".join(str(item).strip() for item in parsed if str(item).strip())
+    if isinstance(parsed, str):
+        return parsed.strip()
+    return (value or "").strip()
+
 def companies():
+    ordered_links = []
+    link_path = base / "company_link.csv"
+    if link_path.exists():
+        with open(link_path, encoding="utf-8") as handle:
+            for row in csv.DictReader(handle):
+                link = (row.get("company_link") or "").split("?")[0].strip()
+                if link:
+                    ordered_links.append(link)
+    logos = {}
+    logo_path = base / "company_link_logo.csv"
+    if logo_path.exists():
+        with open(logo_path, encoding="utf-8") as handle:
+            for row in csv.DictReader(handle):
+                link = (row.get("company_link") or "").split("?")[0].strip()
+                logo = (row.get("logo_link") or row.get("logo") or "").strip()
+                if link and logo:
+                    logos[link] = logo
     rows = []
     seen_links = set()
     seen_names = {}
     aliases = {}
     with open(base / "companies_data.csv", encoding="utf-8") as handle:
-        for row in csv.DictReader(handle):
+        for index, row in enumerate(csv.DictReader(handle)):
             link = (row.get("company_link") or "").split("?")[0].strip()
+            if not link and index < len(ordered_links):
+                link = ordered_links[index]
             name = (row.get("name") or "").strip()
             if not link or link in seen_links:
                 continue
@@ -628,12 +744,12 @@ def companies():
             rows.append({
                 "name": name,
                 "companyLink": link,
-                "logo": (row.get("logo") or "").strip(),
-                "description": (row.get("description") or "").strip(),
+                "logo": (row.get("logo") or "").strip() or logos.get(link, ""),
+                "description": as_text(row.get("description") or ""),
                 "website": (row.get("website") or "").strip(),
                 "size": (row.get("size") or "").strip(),
                 "industries": (row.get("industries") or "").strip(),
-                "address": (row.get("address") or "").strip(),
+                "address": (row.get("address") or "").strip() or as_text(row.get("addresses") or ""),
             })
     return rows, aliases
 
@@ -652,28 +768,38 @@ def jobs(aliases):
                 continue
             seen.add(link)
             seen_titles.add(title_key)
-            overview = ast.literal_eval(row.get("overview") or "{}")
-            details = ast.literal_eval(row.get("job_details") or "{}")
-            addresses = ast.literal_eval(row.get("addresses") or "[]")
-            skills = ast.literal_eval(row.get("skills") or "[]")
+            overview = literal(row.get("overview"), {})
+            details = literal(row.get("job_details"), {})
+            addresses = literal(row.get("addresses"), [])
+            skills = literal(row.get("skills"), [])
+            if not isinstance(overview, dict):
+                overview = {}
+            if not isinstance(details, dict):
+                details = {}
+            if not isinstance(addresses, list):
+                addresses = []
+            if not isinstance(skills, list):
+                skills = []
             sections = []
             for label in ("Mô tả công việc", "Yêu cầu ứng viên", "Quyền lợi ứng viên", "Thu nhập"):
-                text = (details.get(label) or "").strip()
+                text = str(details.get(label) or "").strip()
                 if text:
                     sections.append(f"{label}\n{text}")
             if skills:
-                sections.append("Kỹ năng\n" + ", ".join(skills))
+                sections.append("Kỹ năng\n" + ", ".join(str(skill) for skill in skills))
             rows.append({
-                "title": (row.get("title") or "").strip(),
+                "title": title,
                 "jobLink": link,
                 "companyLink": company,
                 "company": (row.get("company") or "").strip(),
                 "deadline": (row.get("deadline") or overview.get("Hạn ứng tuyển") or "").strip(),
-                "location": (overview.get("Địa điểm") or "").strip(),
-                "experience": (overview.get("Kinh nghiệm") or "").strip(),
-                "addresses": addresses,
-                "skills": skills,
-                "income": (details.get("Thu nhập") or "").strip(),
+                "location": str(overview.get("Địa điểm") or "").strip(),
+                "experience": str(overview.get("Kinh nghiệm") or "").strip(),
+                "workForm": str(overview.get("Hình thức làm việc") or "").strip(),
+                "quantity": str(overview.get("Số lượng tuyển") or "").strip(),
+                "addresses": [str(item) for item in addresses],
+                "skills": [str(item) for item in skills],
+                "income": str(details.get("Thu nhập") or overview.get("Mức lương") or "").strip(),
                 "description": "\n\n".join(sections),
             })
     return rows
