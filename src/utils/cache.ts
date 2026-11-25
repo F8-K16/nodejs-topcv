@@ -518,6 +518,7 @@ export async function invalidateJobCaches(
   const tasks: Promise<void>[] = [
     cacheDel(CacheKeys.adminDashboardSummary),
     bumpPublicSurfaceVersion(),
+    cacheDelPattern(`${PREFIX}v1:jobs:recommended:*`),
   ];
   if (opts?.jobId != null) {
     tasks.push(cacheDel(CacheKeys.jobPublicDetailLegacy(opts.jobId)));

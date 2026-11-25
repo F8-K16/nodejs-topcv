@@ -29,6 +29,16 @@ function resolvePool(limit: number) {
   return Math.min(300, Math.max(30, scaled));
 }
 
+function visibleRecommendedJobWhere(now: Date): Prisma.JobWhereInput {
+  return {
+    deletedAt: null,
+    moderationStatus: JobModerationStatus.APPROVED,
+    OR: [{ deadline: null }, { deadline: { gte: now } }],
+    company: { status: true, deletedAt: null },
+    category: { deletedAt: null },
+  };
+}
+
 const EXPERIENCE_RANK: Record<string, number> = {
   INTERN: 0,
   FRESHER: 1,
@@ -732,9 +742,7 @@ export const candidateRecommendationService = {
     const now = new Date();
 
     const where: Prisma.JobWhereInput = {
-      moderationStatus: JobModerationStatus.APPROVED,
-      OR: [{ deadline: null }, { deadline: { gte: now } }],
-      company: { status: true },
+      ...visibleRecommendedJobWhere(now),
       ...(appliedIds.length ? { id: { notIn: appliedIds } } : {}),
     };
 
@@ -915,9 +923,7 @@ export const candidateRecommendationService = {
     const now = new Date();
 
     const where: Prisma.JobWhereInput = {
-      moderationStatus: JobModerationStatus.APPROVED,
-      OR: [{ deadline: null }, { deadline: { gte: now } }],
-      company: { status: true },
+      ...visibleRecommendedJobWhere(now),
       ...(appliedIds.length ? { id: { notIn: appliedIds } } : {}),
     };
 
